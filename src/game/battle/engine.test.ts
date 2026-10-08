@@ -5,6 +5,9 @@ import type {
   StatusEffect,
 } from '../data/battle';
 import type { Effect, StatusSpec } from '../data/model';
+import { actorSnapshot, damageAmount, effectiveStats } from './calculations';
+import { Engine } from './engine';
+import { attackPayload, fixture, skill } from './fixtures.test-support';
 import {
   advanceBattle,
   checkCommand,
@@ -18,9 +21,6 @@ import {
   retryBattle,
   submitCommand,
 } from './index';
-import { actorSnapshot, damageAmount, effectiveStats } from './calculations';
-import { Engine } from './engine';
-import { attackPayload, fixture, skill } from './fixtures.test-support';
 import type { BattleSession, PlayerCommand } from './types';
 /**
  * テストセッションの固定敵枠を取得する。
@@ -139,8 +139,8 @@ function atk(
   return { ...attackPayload(overrides), kind: 'attack', target, attached: [] };
 }
 
-describe('initialization and functional command API', () => {
-  it('starts full HP at the deterministic first slot and pauses TU during input', () => {
+describe('戦闘初期化と純粋なコマンドAPI', () => {
+  it('全快で固定順の先頭から開始し、入力待ちではTUを進めない', () => {
     const s = fixture();
     expect(s.state.now).toBe(100);
     expect(getInputActor(s)).toBe('party-1');
@@ -160,7 +160,7 @@ describe('initialization and functional command API', () => {
       command: { selectedTargetId: 'party-1' },
     });
   });
-  it('uses equipment and clamps initial stats', () => {
+  it('装備を反映し、初期能力値を上下限に収める', () => {
     const s = fixture();
     s.content.equipment.push({
       id: 'starter-boots',
@@ -175,7 +175,7 @@ describe('initialization and functional command API', () => {
     status(next, actor(next), { familyId: 'spd-down', magnitude: 10000 });
     expect(effectiveStats(actor(next)).spd).toBe(274);
   });
-  it('processes enemy actions and slot ties in order', () => {
+  it('敵の行動と同着の人物を定められた順に処理する', () => {
     let s = fixture();
     s = submit(s, command('wait', null));
     expect(getInputActor(s)).toBe('party-2');
@@ -200,7 +200,7 @@ describe('initialization and functional command API', () => {
     command('basic-attack', 'party-2'),
     { ...command(), chosenElement: 'ice' as const },
     command('knight-a2', 'boss-01'),
-  ])('rejects invalid input atomically', (c) => {
+  ])('不正な入力を拒否し、戦闘状態を変更しない', (c) => {
     const s = fixture();
     const before = structuredClone(s);
     const result = submitCommand(s, c);
@@ -208,7 +208,7 @@ describe('initialization and functional command API', () => {
     expect(result.session).toBe(s);
     expect(s).toEqual(before);
   });
-  it('hides lower ranks and shares their cooldown', () => {
+  it('下位ランクのコマンドを非表示にし、クールダウンを共有する', () => {
     const s = fixture();
     expect(checkCommand(s, command('knight-a1', null)).ok).toBe(false);
     actor(s).cooldowns.push({
@@ -222,7 +222,7 @@ describe('initialization and functional command API', () => {
     actor(s).cooldowns[0]!.timer = { kind: 'running', at: 100 };
     expect(checkCommand(s, command('knight-a2', null)).ok).toBe(true);
   });
-  it('chooses and preserves an element through casting', () => {
+  it('選択した属性を詠唱中も保持する', () => {
     const s = fixture({
       jobs: ['wizard', 'knight', 'cleric'],
       skills: [
@@ -249,7 +249,7 @@ describe('initialization and functional command API', () => {
     expect(s.state.now).toBe(100);
     expect(actor(s).action.kind).toBe('ready');
   });
-  it('excludes already-arrived waiting allies from advance targets', () => {
+  it('既に手番へ到達した味方を前進の対象から除外する', () => {
     const s = fixture({
       jobs: ['time-mage', 'wizard', 'cleric'],
       skills: [
@@ -278,8 +278,8 @@ describe('initialization and functional command API', () => {
   });
 });
 
-describe('damage, healing, snapshots and end conditions', () => {
-  it('uses current target defense, weakness and gauge resistance', () => {
+describe('ダメージ・回復・能力参照時点・終了判定', () => {
+  it('対象の現在の防御・弱点・ブレイク耐性を参照する', () => {
     const s = fixture({
       jobs: ['wizard', 'knight', 'cleric'],
       skills: [
@@ -302,7 +302,7 @@ describe('damage, healing, snapshots and end conditions', () => {
     expect(enemy(next).hp).toBe(9910);
     expect(enemy(next)).toMatchObject({ breakGauge: 465 });
   });
-  it('rounds only once using exact rational arithmetic', () => {
+  it('整数の分数で正確に計算し、最後に一度だけ丸める', () => {
     const s = fixture({ enemyStats: { def: 0 } });
     actor(s).stats.atk = 30;
     status(s, enemy(s), { familyId: 'physical-guard', magnitude: 3000 });
@@ -326,7 +326,7 @@ describe('damage, healing, snapshots and end conditions', () => {
       ),
     ).toBe(22);
   });
-  it('B15: computes delay from SPD saved before self buff', () => {
+  it('B15: 自身への強化前に保存したSPDでディレイを計算する', () => {
     const s = fixture({
       jobs: ['time-mage', 'wizard', 'cleric'],
       skills: [
@@ -351,7 +351,7 @@ describe('damage, healing, snapshots and end conditions', () => {
     });
     expect(effectiveStats(actor(next)).spd).toBe(125);
   });
-  it('B14: finishes self healing after killing the required enemy', () => {
+  it('B14: 必須対象の敵を倒した後も自身の回復を完了する', () => {
     const s = fixture({
       jobs: ['paladin', 'wizard', 'cleric'],
       skills: [
@@ -379,7 +379,7 @@ describe('damage, healing, snapshots and end conditions', () => {
     expect(() => retryBattle(next)).toThrow();
     expect(getBattleOutcome(next).reward).not.toBeNull();
   });
-  it('uses the pre-heal HP condition for all effects of a low-HP action', () => {
+  it('背水行動の全効果で回復前のHP条件を使用する', () => {
     const s = fixture({
       jobs: ['berserker', 'wizard', 'cleric'],
       skills: [
@@ -410,7 +410,7 @@ describe('damage, healing, snapshots and end conditions', () => {
     expect(enemy(next).hp).toBe(9930);
     expect(actor(next).hp).toBe(220);
   });
-  it('B18: immune damage also suppresses all attached effects and gauge damage', () => {
+  it('B18: 属性無効では付随効果とゲージ削りも無効にする', () => {
     const effect: Effect = {
       ...attackPayload({ element: 'dark', breakDamage: 300 }),
       kind: 'attack',
@@ -445,7 +445,7 @@ describe('damage, healing, snapshots and end conditions', () => {
       action: { ready: { at: 125 } },
     });
   });
-  it('caps healing and ordinary healing cannot resurrect', () => {
+  it('回復を最大HPまでに制限し、通常回復では蘇生しない', () => {
     const s = fixture({
       jobs: ['cleric', 'wizard', 'knight'],
       skills: [
@@ -470,7 +470,7 @@ describe('damage, healing, snapshots and end conditions', () => {
     expect(actor(next).hp).toBe(300);
     expect(next.state.participants[1].hp).toBe(0);
   });
-  it('B07: self revival preserves fixed 50 TU and cooldown after reflection death', () => {
+  it('B07: 反射で死亡した後の自己蘇生は固定50 TU待機とCDを保持する', () => {
     const s = fixture({
       jobs: ['berserker', 'wizard', 'cleric'],
       skills: [
@@ -495,7 +495,7 @@ describe('damage, healing, snapshots and end conditions', () => {
     });
     expect(actor(next).statuses).toEqual([]);
   });
-  it('only cleric-a3 revives another dead ally and retains their CD', () => {
+  it('クレリックA3だけが他の死者を蘇生し、対象のCDを保持する', () => {
     const s = fixture({
       jobs: ['cleric', 'wizard', 'knight'],
       skills: [
@@ -517,7 +517,7 @@ describe('damage, healing, snapshots and end conditions', () => {
     });
     expect(checkCommand(s, command('cleric-a3', 'party-1')).ok).toBe(false);
   });
-  it('counts a reflection double KO as defeat after the whole unit', () => {
+  it('反射の相打ちは処理単位を完了した後に敗北と判定する', () => {
     const s = fixture({
       jobs: ['wizard', 'knight', 'cleric'],
       skills: [
@@ -538,7 +538,7 @@ describe('damage, healing, snapshots and end conditions', () => {
     expect(next.state.result).toBe('defeat');
     expect(getBattleOutcome(next).reward).toBeNull();
   });
-  it('restores caller snapshots without modifying progression and replays deterministically', () => {
+  it('進行を変更せず開始前スナップショットを復元し、同じ結果を再現する', () => {
     const source = fixture();
     const progress = {
       points: 3,
@@ -562,8 +562,8 @@ describe('damage, healing, snapshots and end conditions', () => {
   });
 });
 
-describe('casting, break and time manipulation', () => {
-  it('B09: a dead reserved target fizzles with delay and retained cooldown', () => {
+describe('詠唱・ブレイク・時間操作', () => {
+  it('B09: 予約対象が死亡した詠唱は不発になり、ディレイとCDを保持する', () => {
     const s = prepare(
       fixture({
         skills: [
@@ -607,7 +607,7 @@ describe('casting, break and time manipulation', () => {
     expect(actor(next).cooldowns[0]?.timer).toMatchObject({ at: 200 });
     expect(next.log.some((e) => e.kind === 'fizzle')).toBe(true);
   });
-  it('B04: delays an unprocessed same-TU enemy without consuming its rotation', () => {
+  it('B04: 同着の未処理の敵を行動列を消費せず後退させる', () => {
     const s = fixture({
       jobs: ['time-mage', 'wizard', 'cleric'],
       skills: [
@@ -632,7 +632,7 @@ describe('casting, break and time manipulation', () => {
       cooldowns: [],
     });
   });
-  it('B06: accumulates knockback into the acting participant final wait', () => {
+  it('B06: 行動中に受けた後退を最終待機時間へ加算する', () => {
     const s = prepare(
       fixture({
         skills: [
@@ -657,7 +657,7 @@ describe('casting, break and time manipulation', () => {
       ready: { kind: 'running', at: 210 },
     });
   });
-  it('canceling a cast makes fixed 30 TU wait and keeps cooldown', () => {
+  it('詠唱キャンセルは固定30 TU待機とし、CDを保持する', () => {
     const s = prepare(fixture());
     const p = s.state.participants[1];
     p.action = {
@@ -675,7 +675,7 @@ describe('casting, break and time manipulation', () => {
     engine(s).utility(p, actor(s), { kind: 'cancel-cast' });
     expect(actor(s).action.kind).toBe('acting');
   });
-  it('break cancels casting, consumes one column, recovers before future readiness', () => {
+  it('ブレイクは詠唱を中断して行動列を1つ消費し、復帰後に次の手番を設定する', () => {
     const s = fixture({
       skills: [
         skill('knight-a3', {
@@ -713,7 +713,7 @@ describe('casting, break and time manipulation', () => {
       action: { kind: 'waiting', ready: { at: 285 } },
     });
   });
-  it('B08: reaction break preserves recovery and does not consume an acting column twice', () => {
+  it('B08: 反撃ブレイクは復帰予定を保持し、行動中の列を二重消費しない', () => {
     const s = prepare(
       fixture({
         skills: [
@@ -750,7 +750,7 @@ describe('casting, break and time manipulation', () => {
       action: { kind: 'broken', break: { recovers: { at: 160 } } },
     });
   });
-  it('knockback resistance rounds each application up, advance has now+1 floor', () => {
+  it('後退耐性は各適用で切り上げ、前進は現在TU＋1を下限とする', () => {
     const s = prepare(fixture({ enemy: { knockbackResistance: 5000 } }));
     enemy(s).action = { kind: 'waiting', ready: { kind: 'running', at: 110 } };
     engine(s).utility(actor(s), enemy(s), {
@@ -773,8 +773,8 @@ describe('casting, break and time manipulation', () => {
   });
 });
 
-describe('state lifetimes, freezing and simultaneous events', () => {
-  it('B01: thawed zero-TU poison expiry precedes its zero-TU tick', () => {
+describe('状態の期限・時間凍結・同時イベント', () => {
+  it('B01: 停止解除後の残り0 TUの毒は発動より先に期限切れになる', () => {
     const s = prepare(fixture());
     const p = s.state.participants[1];
     const poison = status(s, p, {
@@ -792,7 +792,7 @@ describe('state lifetimes, freezing and simultaneous events', () => {
     expect(next.state.participants[1].statuses).toEqual([]);
     expect(next.state.participants[1].hp).toBe(300);
   });
-  it('B02: thawed zero-TU cast activates once before same-TU party input', () => {
+  it('B02: 停止解除後の残り0 TUの詠唱は同着の味方入力前に1回だけ発動する', () => {
     const s = prepare(
       fixture({
         skills: [
@@ -818,7 +818,7 @@ describe('state lifetimes, freezing and simultaneous events', () => {
     expect(getInputActor(next)).toBe('party-1');
     expect(advanceBattle(next)).toEqual(next);
   });
-  it('B03: all simultaneous poison ticks resolve before phase transition and input', () => {
+  it('B03: 同時刻の毒をすべて処理してからフェーズ移行と入力待ちを処理する', () => {
     const s = prepare(
       fixture({
         enemyStats: { maxHp: 760 },
@@ -861,7 +861,7 @@ describe('state lifetimes, freezing and simultaneous events', () => {
         .map((e) => e.kind),
     ).toEqual(['damage', 'damage', 'phase']);
   });
-  it('simultaneous poison deaths form one unit and defeat wins the tie', () => {
+  it('毒による同時死亡を1処理単位とし、相打ちは敗北を優先する', () => {
     const s = prepare(fixture());
     s.state.participants.forEach((p) => {
       p.hp = 1;
@@ -875,7 +875,7 @@ describe('state lifetimes, freezing and simultaneous events', () => {
     expect(next.state.participants.every((p) => p.hp === 0)).toBe(true);
     expect(next.log.filter((e) => e.kind === 'damage')).toHaveLength(4);
   });
-  it('B10/B16: frozen reapplication preserves strength, author and tick period', () => {
+  it('B10/B16: 凍結中の再付与は強度・付与者・発動周期を保持する', () => {
     const s = prepare(fixture());
     const target = enemy(s);
     const e = engine(s);
@@ -914,7 +914,7 @@ describe('state lifetimes, freezing and simultaneous events', () => {
     });
     expect(enemy(next).action).toMatchObject({ ready: { at: 210 } });
   });
-  it('reapplying stop only changes its end and freezes newly added statuses', () => {
+  it('停止の再付与は終了時刻だけを変更し、新規状態も凍結する', () => {
     const s = prepare(fixture());
     const p = enemy(s);
     p.action = { kind: 'waiting', ready: { kind: 'running', at: 150 } };
@@ -950,7 +950,7 @@ describe('state lifetimes, freezing and simultaneous events', () => {
       at: 230,
     });
   });
-  it('B11: death thaws CD at death time, later resurrection does not reset it', () => {
+  it('B11: 死亡時にCDを復元し、その後の蘇生ではCDを再設定しない', () => {
     const s = prepare(fixture());
     const p = s.state.participants[1];
     const e = engine(s);
@@ -967,7 +967,7 @@ describe('state lifetimes, freezing and simultaneous events', () => {
     expect(p.cooldowns[0]?.timer).toEqual({ kind: 'running', at: 190 });
     expect(p.action).toMatchObject({ ready: { at: 200 } });
   });
-  it('B12: canceling a stopped cast freezes its 30 TU recovery', () => {
+  it('B12: 停止中の詠唱キャンセルは30 TUの待機を凍結する', () => {
     const s = prepare(fixture());
     const p = s.state.participants[1];
     const e = engine(s);
@@ -995,7 +995,7 @@ describe('state lifetimes, freezing and simultaneous events', () => {
       at: 230,
     });
   });
-  it('stopped break freezes 60 TU recovery and stop immunity rejects freezing', () => {
+  it('停止中のブレイクは60 TUの復帰待機を凍結し、停止無効の敵は凍結しない', () => {
     const s = fixture({
       skills: [
         skill('knight-a3', {
@@ -1021,7 +1021,7 @@ describe('state lifetimes, freezing and simultaneous events', () => {
     );
     expect(enemy(immune).timeStopUntil).toBeNull();
   });
-  it('dispelling stop thaws timers; removed frozen poison never comes back', () => {
+  it('停止解除で予定を復元し、除去済みの凍結した毒は復活させない', () => {
     const s = prepare(fixture());
     const p = enemy(s);
     const e = engine(s);
@@ -1033,7 +1033,7 @@ describe('state lifetimes, freezing and simultaneous events', () => {
     expect(p.statuses).toEqual([]);
     expect(p.action).toMatchObject({ ready: { kind: 'running', at: 500 } });
   });
-  it('normal same-family reapplication only refreshes expiry and dispels use grant order', () => {
+  it('同系統の再付与は期限だけを更新し、解除は付与順に処理する', () => {
     const s = prepare(fixture());
     const e = engine(s);
     const p = s.state.participants[1];
@@ -1070,8 +1070,8 @@ describe('state lifetimes, freezing and simultaneous events', () => {
   });
 });
 
-describe('taunt, cover, reflection, retaliation, follow and traps', () => {
-  it('taunt overrides live selection only at cast start and remains bound after death', () => {
+describe('挑発・かばう・反射・反撃・追撃・罠', () => {
+  it('挑発は詠唱開始時だけ対象を変更し、挑発者の死亡後も予約対象を保持する', () => {
     const s = prepare(
       fixture({
         skills: [
@@ -1104,7 +1104,7 @@ describe('taunt, cover, reflection, retaliation, follow and traps', () => {
     ).toBe(true);
     expect(next.state.participants[2].hp).toBe(1);
   });
-  it('B13: cover moves damage and attached poison, with no cover chain', () => {
+  it('B13: かばうはダメージと付随する毒を移し、連鎖しない', () => {
     const hit: Effect = {
       ...attackPayload(),
       kind: 'attack',
@@ -1142,7 +1142,7 @@ describe('taunt, cover, reflection, retaliation, follow and traps', () => {
       false,
     );
   });
-  it('B13: poison does not attach to a cover recipient killed by the hit', () => {
+  it('B13: 被弾で死亡したかばう役には毒を付与しない', () => {
     const hit: Effect = {
       ...attackPayload(),
       kind: 'attack',
@@ -1171,7 +1171,7 @@ describe('taunt, cover, reflection, retaliation, follow and traps', () => {
     expect(s.state.participants[1].statuses).toEqual([]);
     expect(actor(s).hp).toBe(300);
   });
-  it('all-target hits ignore cover and freeze their target set before any effect', () => {
+  it('全体攻撃はかばうを無視し、効果処理前に対象集合を固定する', () => {
     const s = prepare(
       fixture({
         skills: [
@@ -1197,7 +1197,7 @@ describe('taunt, cover, reflection, retaliation, follow and traps', () => {
       270, 270, 270,
     ]);
   });
-  it('reflection saved before the hit survives same-hit stop and dispel; counter is blocked', () => {
+  it('被弾前に保存した反射は同じ攻撃の停止・解除後も発動し、反撃は抑止する', () => {
     const hit: Effect = {
       ...attackPayload({ damageType: 'magic' }),
       kind: 'attack',
@@ -1223,7 +1223,7 @@ describe('taunt, cover, reflection, retaliation, follow and traps', () => {
     expect(next.log.some((x) => x.kind === 'reflect')).toBe(true);
     expect(next.log.some((x) => x.kind === 'counter')).toBe(false);
   });
-  it('B20: one HP loss consumes reflect even when reflected amount is zero', () => {
+  it('B20: HPが1減れば反射量が0でも反射回数を消費する', () => {
     const s = fixture({
       skills: [
         skill('knight-a3', {
@@ -1238,7 +1238,7 @@ describe('taunt, cover, reflection, retaliation, follow and traps', () => {
     expect(enemy(next).statuses).toEqual([]);
     expect(next.log.find((x) => x.kind === 'reflect')?.amount).toBe(0);
   });
-  it('B21: reflection killing the attacker suppresses counter before self revival', () => {
+  it('B21: 反射で攻撃者が死亡すると自己蘇生前の反撃を抑止する', () => {
     const s = fixture({
       jobs: ['berserker', 'wizard', 'cleric'],
       skills: [
@@ -1261,7 +1261,7 @@ describe('taunt, cover, reflection, retaliation, follow and traps', () => {
         .map((x) => x.kind),
     ).toEqual(['reflect', 'death', 'revive']);
   });
-  it('counter and follow use their own actor values and never chain reactions', () => {
+  it('反撃と追撃は自身の能力値を使い、反応を連鎖させない', () => {
     const s = fixture();
     const follower = s.state.participants[1];
     follower.stats.atk = 80;
@@ -1277,7 +1277,7 @@ describe('taunt, cover, reflection, retaliation, follow and traps', () => {
     expect(next.state.participants[1].action).toEqual({ kind: 'ready' });
     expect(next.state.participants[1].cooldowns).toEqual([]);
   });
-  it('follow does not target a dead enemy or run for waits and heals', () => {
+  it('追撃は死亡した敵に発動せず、待機・回復でも発動しない', () => {
     const s = fixture({ enemyStats: { maxHp: 20 } });
     status(s, s.state.participants[1], {
       familyId: 'follow',
@@ -1297,7 +1297,7 @@ describe('taunt, cover, reflection, retaliation, follow and traps', () => {
       ),
     ).toBe(false);
   });
-  it('B05: trap postpones enemy start without consuming its column or remaining traps', () => {
+  it('B05: 罠は敵の行動開始を延期し、行動列と残りの罠を消費しない', () => {
     const s = prepare(fixture());
     const e = engine(s);
     enemy(s).action = { kind: 'ready' };
@@ -1330,7 +1330,7 @@ describe('taunt, cover, reflection, retaliation, follow and traps', () => {
       s.log.some((x) => x.kind === 'command' && x.actorId === 'boss-01'),
     ).toBe(false);
   });
-  it('trap uses trigger-time ATK and reinstallation replaces the old trap', () => {
+  it('罠は発動時のATKを使い、再設置で古い罠を置き換える', () => {
     const s = fixture({
       jobs: ['ranger', 'wizard', 'cleric'],
       skills: [
@@ -1361,7 +1361,7 @@ describe('taunt, cover, reflection, retaliation, follow and traps', () => {
     expect(enemy(s).hp).toBe(9930);
     expect(s.state.traps).toHaveLength(0);
   });
-  it('stopped trap owners retain their trap; cast completion never triggers it', () => {
+  it('停止中の設置者の罠を保持し、詠唱完了では罠を発動しない', () => {
     const s = prepare(fixture());
     const e = engine(s);
     s.state.traps.push({
@@ -1401,8 +1401,8 @@ describe('taunt, cover, reflection, retaliation, follow and traps', () => {
   });
 });
 
-describe('unit boundaries and complete deterministic sample battle', () => {
-  it('supports animation pauses and escape before the next autonomous event', () => {
+describe('処理単位の境界と最後まで再現可能なサンプル戦闘', () => {
+  it('次の自動イベント前に演出待ちと逃走を実行できる', () => {
     const s = fixture();
     const result = submitCommand(s, command('wait', null), { advance: false });
     expect(result.ok).toBe(true);
@@ -1415,7 +1415,7 @@ describe('unit boundaries and complete deterministic sample battle', () => {
       submit(s, command('wait', null)),
     );
   });
-  it('stepping stops after one trap unit before starting the enemy command', () => {
+  it('段階進行は罠1個の処理後、敵の行動開始前に停止する', () => {
     const s = prepare(fixture());
     actor(s).action = { kind: 'waiting', ready: { kind: 'running', at: 300 } };
     enemy(s).action = { kind: 'waiting', ready: { kind: 'running', at: 100 } };
@@ -1437,7 +1437,7 @@ describe('unit boundaries and complete deterministic sample battle', () => {
     expect(enemy(continued).action).toMatchObject({ ready: { at: 225 } });
     expect(advanceBattle(continued)).toEqual(advanceBattle(s));
   });
-  it('reaches victory with the same input sequence, logs and timeline in automatic and stepped modes', () => {
+  it('自動進行と段階進行で同じ入力列・ログ・タイムラインのまま勝利する', () => {
     const source = fixture({
       enemyStats: { maxHp: 400 },
       enemy: { maxBreakGauge: 60 },
@@ -1474,17 +1474,17 @@ describe('unit boundaries and complete deterministic sample battle', () => {
     expect(play(false)).toEqual(automatic);
     expect(source.state.result).toBe('ongoing');
   });
-  it('initialization rejects invalid party slots and unknown builds', () => {
+  it('初期化時に不正な人物枠と編成を拒否する', () => {
     const s = fixture();
     s.setup.party[0].id = 'party-2';
     expect(() => createBattle(s.content, s.setup)).toThrow('Party slots');
     const next = fixture();
     next.setup.party[0].learnedSkills = ['knight-a3'];
     expect(() => createBattle(next.content, next.setup)).toThrow(
-      'prerequisites',
+      'prerequisite',
     );
   });
-  it('enemy HP threshold jumps keep an existing cast and never return to an earlier phase', () => {
+  it('敵のHP閾値を飛び越えても詠唱を保持し、以前のフェーズへ戻らない', () => {
     const s = prepare(
       fixture({
         skills: [
@@ -1536,8 +1536,8 @@ describe('unit boundaries and complete deterministic sample battle', () => {
   });
 });
 
-describe('additional rule boundaries', () => {
-  it('game-rules 10.1: three tied allies win before the enemy tied action', () => {
+describe('追加のルール境界値', () => {
+  it('ゲームルール10.1: 同着の味方3人が敵の同着行動より先に勝利する', () => {
     const s = fixture({
       jobs: ['knight', 'knight', 'knight'],
       partyStats: { maxHp: 100 },
@@ -1572,7 +1572,7 @@ describe('additional rule boundaries', () => {
       third.log.some((e) => e.kind === 'command' && e.actorId === 'boss-01'),
     ).toBe(false);
   });
-  it('applies break vulnerability only to later hits and never re-breaks', () => {
+  it('ブレイクの被ダメージ増加は後続の攻撃だけに適用し、再ブレイクしない', () => {
     const s = fixture({
       skills: [
         skill('knight-a3', {
@@ -1590,7 +1590,7 @@ describe('additional rule boundaries', () => {
       break: { recovers: { at: 160 } },
     });
   });
-  it('cancel immunity preserves casts and death removes a trap owned by that actor', () => {
+  it('キャンセル無効は詠唱を保持し、死亡は本人が設置した罠を除去する', () => {
     const s = prepare(fixture({ enemy: { cancelImmune: true } }));
     enemy(s).action = {
       kind: 'casting',
@@ -1616,7 +1616,7 @@ describe('additional rule boundaries', () => {
     expect(p.hp).toBe(0);
     expect(s.state.traps).toEqual([]);
   });
-  it('keeps the fixed all-allies set for healing before dispelling debuffs', () => {
+  it('固定した味方全体へ回復してから弱体解除を処理する', () => {
     const s = fixture({
       jobs: ['cleric', 'knight', 'wizard'],
       skills: [
@@ -1658,7 +1658,7 @@ describe('additional rule boundaries', () => {
       'dispel:party-3',
     ]);
   });
-  it('AI extrema use current absolute values with stable slot tie breaks', () => {
+  it('AIは現在の絶対値で対象を選び、同値は固定の人物順で決定する', () => {
     const s = fixture();
     const p = enemy(s);
     if (p.side !== 'enemy') throw new Error('Expected enemy');
@@ -1671,7 +1671,7 @@ describe('additional rule boundaries', () => {
     s.state.participants[2].hp = 2;
     expect(getEnemyForecast(s).command.selectedTargetId).toBe('party-3');
   });
-  it('clamps stat modifiers and SPD limits and leaves existing schedules unchanged', () => {
+  it('能力補正とSPDを上下限に収め、既存の行動予定を変更しない', () => {
     const s = fixture();
     const ready = structuredClone(s.state.participants[1].action);
     status(s, s.state.participants[1], {
@@ -1684,5 +1684,182 @@ describe('additional rule boundaries', () => {
     p.stats.atk = 9999;
     status(s, p, { familyId: 'atk-up', magnitude: 10000 });
     expect(effectiveStats(p).atk).toBe(9999);
+  });
+});
+
+/** 現行16系統すべての状態。付与・延長・自然終了を同じ契約で検証する。 */
+const allStatuses: StatusSpec[] = [
+  ...(
+    [
+      'atk-up',
+      'atk-down',
+      'mag-up',
+      'mag-down',
+      'spd-up',
+      'spd-down',
+      'physical-guard',
+      'magic-guard',
+    ] as const
+  ).map((familyId) => ({ familyId, magnitude: 2000 })),
+  { familyId: 'taunt' },
+  { familyId: 'cover' },
+  { familyId: 'time-stop' },
+  { familyId: 'reflect', ratio: 5000, charges: 3 },
+  { familyId: 'counter', attack: attackPayload() },
+  { familyId: 'follow', attack: attackPayload() },
+  { familyId: 'poison', damage: 8, interval: 20 },
+  { familyId: 'self-revive', hpRatio: 5000, charges: 1 },
+];
+
+describe('全状態系統のライフサイクル', () => {
+  it.each(allStatuses)('$familyIdの付与・延長・期限切れを固定する', (spec) => {
+    const s = prepare(fixture());
+    const e = engine(s);
+    const p = s.state.participants[1];
+    e.applyStatus(actor(s), p, spec, 40, true);
+    const granted = structuredClone(p.statuses[0]!);
+    expect(granted).toMatchObject({
+      sourceId: 'party-1',
+      spec,
+      expires: { kind: 'running', at: 140 },
+      dispellable: true,
+    });
+    expect(granted.nextTick).toEqual(
+      spec.familyId === 'poison' ? { kind: 'running', at: 120 } : null,
+    );
+    // 消費済み回数を再付与で補充しない。強度・付与者・周期も元のまま。
+    if (p.statuses[0]!.remainingCharges !== null)
+      p.statuses[0]!.remainingCharges = 0;
+    const before = structuredClone(p.statuses[0]!);
+    s.state.now = 110;
+    const stronger =
+      'magnitude' in spec
+        ? { ...spec, magnitude: 4000 }
+        : 'attack' in spec
+          ? { ...spec, attack: attackPayload({ power: 200 }) }
+          : spec.familyId === 'poison'
+            ? { ...spec, damage: 99 }
+            : spec;
+    e.applyStatus(s.state.participants[2], p, stronger, 50, false);
+    expect(p.statuses).toEqual([
+      { ...before, expires: { kind: 'running', at: 160 } },
+    ]);
+    actor(s).action = { kind: 'waiting', ready: { kind: 'running', at: 159 } };
+    const alive = advanceBattle(s);
+    expect(alive.state.now).toBe(159);
+    expect(alive.state.participants[1].statuses).toHaveLength(1);
+    actor(alive).action = {
+      kind: 'waiting',
+      ready: { kind: 'running', at: 160 },
+    };
+    const expired = advanceBattle(alive);
+    expect(expired.state.now).toBe(160);
+    expect(expired.state.participants[1].statuses).toEqual([]);
+    expect(
+      expired.log.filter(
+        (x) => x.kind === 'expire' && x.detail === spec.familyId,
+      ),
+    ).toHaveLength(1);
+    if (spec.familyId === 'time-stop') {
+      expect(expired.state.participants[1].timeStopUntil).toBeNull();
+      expect(expired.state.participants[1].action).toEqual({
+        kind: 'waiting',
+        ready: { kind: 'running', at: 560 },
+      });
+    }
+    if (spec.familyId === 'poison')
+      expect(expired.state.participants[1].hp).toBe(284);
+    const nextEngine = engine(expired);
+    nextEngine.applyStatus(
+      expired.state.participants[2],
+      expired.state.participants[1],
+      spec,
+      40,
+      true,
+    );
+    expect(expired.state.participants[1].statuses[0]!.sourceId).toBe('party-3');
+    expect(expired.state.participants[1].statuses[0]!.id).not.toBe(granted.id);
+  });
+  it.each(allStatuses)('死亡者へ$familyIdを付与しない', (spec) => {
+    const s = prepare(fixture());
+    const p = s.state.participants[1];
+    p.hp = 0;
+    p.action = { kind: 'dead' };
+    engine(s).applyStatus(actor(s), p, spec, 40, true);
+    expect(p.statuses).toEqual([]);
+    expect(p.timeStopUntil).toBeNull();
+  });
+  it('B17: 死亡した挑発者を延長で変更せず、期限切れ後の新規付与だけ変更する', () => {
+    const s = prepare(fixture());
+    const p = enemy(s);
+    const e = engine(s);
+    e.applyStatus(s.state.participants[1], p, { familyId: 'taunt' }, 40, true);
+    s.state.participants[1].hp = 0;
+    s.state.participants[1].action = { kind: 'dead' };
+    s.state.now = 110;
+    e.applyStatus(actor(s), p, { familyId: 'taunt' }, 50, true);
+    expect(p.statuses[0]!.sourceId).toBe('party-2');
+    expect(getEnemyForecast(s).command?.selectedTargetId).toBe('party-1');
+    actor(s).action = { kind: 'waiting', ready: { kind: 'running', at: 160 } };
+    const next = advanceBattle(s);
+    expect(enemy(next).statuses).toEqual([]);
+    engine(next).applyStatus(
+      next.state.participants[2],
+      enemy(next),
+      { familyId: 'taunt' },
+      50,
+      true,
+    );
+    expect(getEnemyForecast(next).command?.selectedTargetId).toBe('party-3');
+  });
+});
+
+describe('実時間・演出待ちと同一入力列の再現性', () => {
+  it('時計・入力待ち時間・処理単位間の演出待ちを変えても全状態・ログ・結果が一致する', () => {
+    const source = fixture({
+      enemyStats: { maxHp: 400 },
+      enemy: { maxBreakGauge: 60 },
+    });
+    /** 指定した実時間と演出待ちで、同じ入力列を最後まで再生する。
+     * @param pauses 処理単位ごとの演出待ちと入力待ちを模擬するか。
+     * @param wallTime 開始時の実時間。論理TUへは渡さない。
+     */
+    const play = (pauses: boolean, wallTime: number) => {
+      vi.setSystemTime(wallTime);
+      let s = structuredClone(source);
+      let steps = 0;
+      const inputs: PlayerCommand[] = [];
+      while (s.state.result === 'ongoing') {
+        if (++steps > 1000) throw new Error('戦闘が終了しません');
+        const id = getInputActor(s);
+        if (id !== null) {
+          if (pauses) {
+            const before = structuredClone(s);
+            vi.advanceTimersByTime(3600000 + steps * 17);
+            expect(advanceBattle(s)).toEqual(before);
+            expect(getInputActor(s)).toBe(id);
+          }
+          const c = { ...command(), actorId: id };
+          inputs.push(c);
+          const result = submitCommand(s, c, { advance: !pauses });
+          if (!result.ok) throw new Error(result.reason);
+          s = result.session;
+        } else {
+          if (pauses) vi.advanceTimersByTime(steps * 500);
+          s = advanceBattle(s, { stopAfterUnit: pauses });
+        }
+      }
+      return { s, inputs, outcome: getBattleOutcome(s) };
+    };
+    vi.useFakeTimers();
+    try {
+      const expected = play(false, Date.UTC(2020, 0, 1));
+      expect(expected.s.state.result).toBe('victory');
+      expect(play(false, Date.UTC(2040, 0, 1))).toEqual(expected);
+      expect(play(true, Date.UTC(2060, 0, 1))).toEqual(expected);
+      expect(source.state.result).toBe('ongoing');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -20,6 +20,7 @@ import type {
   TargetRule,
   UtilityPayload,
 } from '../data/model';
+import { getActiveSkillIds } from '../party/validation';
 import {
   actorSnapshot,
   breakAmount,
@@ -427,18 +428,7 @@ export class Engine {
         !skill.id.startsWith(`${actor.jobId}-`)
       )
         return { ok: false, reason: 'Skill is not learned by this job' };
-      const job = this.content.jobs.find((j) => j.id === actor.jobId);
-      const nodes = job ? [...job.routes.a, ...job.routes.b] : [];
-      const node = nodes.find((n) => n.skillId === skill.id);
-      if (
-        !node ||
-        nodes.some(
-          (n) =>
-            actor.learnedSkills.includes(n.id) &&
-            n.replacementGroup === node.replacementGroup &&
-            n.rank > node.rank,
-        )
-      )
+      if (!getActiveSkillIds(this.content, actor).includes(skill.id))
         return { ok: false, reason: 'Skill has been replaced' };
     }
     const cooldown = actor.cooldowns.find((c) => c.id === skill.cooldownId);

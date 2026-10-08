@@ -71,22 +71,22 @@ const messages = (data: unknown) =>
   validateGameContent(data)
     .map((i) => i.message)
     .join('\n');
-describe('content boundary', () => {
-  it('accepts and isolates a valid partial catalog', () => {
+describe('コンテンツ読み込み時の検証', () => {
+  it('有効な部分カタログを受け入れ、入力から独立したコピーを返す', () => {
     const data = fixture();
     const parsed = parseGameContent(data);
     expect(validateGameContent(parsed)).toEqual([]);
     expect(parsed).toEqual(data);
     expect(parsed).not.toBe(data);
   });
-  it('detects duplicate IDs and missing references', () => {
+  it('重複IDと存在しない参照先を検出する', () => {
     const data = fixture();
     data.skills.push(data.skills[0]!);
     data.jobs[0]!.routes.a[0]!.prerequisites = ['wizard-a1'];
     expect(messages(data)).toContain('Duplicate ID');
     expect(messages(data)).toContain('Missing reference');
   });
-  it('detects indirect and self prerequisite cycles', () => {
+  it('前提スキルの間接循環と自己参照を検出する', () => {
     const data = fixture();
     data.jobs[0]!.routes.a[0]!.prerequisites = ['knight-a2'];
     expect(messages(data)).toContain('Cyclic');
@@ -94,7 +94,7 @@ describe('content boundary', () => {
     expect(messages(data)).toContain('Cyclic');
   });
   it.each(['barrier', 'regeneration', 'self-damage', 'restore-gauge'])(
-    'rejects unsupported %s JSON',
+    '未対応の%sを含むJSONを拒否する',
     (kind) => {
       const data = fixture();
       const raw = {
@@ -105,7 +105,7 @@ describe('content boundary', () => {
       expect(() => parseGameContent(raw)).toThrow();
     },
   );
-  it('rejects multiple hits and multiple attack effects', () => {
+  it('複数ヒットと複数の攻撃効果を拒否する', () => {
     const data = fixture();
     data.skills[0]!.effects.push({ ...attack, attached: [] });
     expect(messages(data)).toContain('Multiple attack');
@@ -116,7 +116,7 @@ describe('content boundary', () => {
       }).length,
     ).toBeGreaterThan(0);
   });
-  it('rejects multiple enemies per encounter', () => {
+  it('1遭遇に複数の敵を設定したデータを拒否する', () => {
     expect(
       messages({
         ...fixture(),
@@ -136,7 +136,7 @@ describe('content boundary', () => {
       }),
     ).toContain('0..1 items');
   });
-  it('validates hit-recipient binding and snapshot timing from unknown JSON', () => {
+  it('未知のJSONの被弾者束縛と能力参照時点を検証する', () => {
     const data = fixture();
     data.skills[0]!.effects = [
       {
@@ -168,7 +168,7 @@ describe('content boundary', () => {
       }).length,
     ).toBeGreaterThan(0);
   });
-  it('rejects illegal targets, resurrection, and undefined element choices', () => {
+  it('不正な対象・蘇生・未定義の属性選択を拒否する', () => {
     const data = fixture();
     data.skills[0]!.effects = [
       { kind: 'revive', target: 'selected', hpRatio: 5000 },
@@ -186,13 +186,13 @@ describe('content boundary', () => {
     { ...fixture(), extra: true },
     { ...fixture(), skills: [{ ...fixture().skills[0], delay: -1 }] },
     { ...fixture(), skills: [{ ...fixture().skills[0], cooldown: 0.5 }] },
-  ])('rejects malformed values', (input) => {
+  ])('不正な構造や値を拒否する', (input) => {
     expect(validateGameContent(input).length).toBeGreaterThan(0);
   });
 });
 
-describe('battle execution data contracts', () => {
-  it('rejects attempts to redefine universal commands', () => {
+describe('戦闘実行データの契約', () => {
+  it('共通の無料コマンドの再定義を拒否する', () => {
     const data = fixture();
     data.skills.push({ ...data.skills[0]!, id: 'wait' });
     expect(messages(data)).toContain('fixed free command');
