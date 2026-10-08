@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { GameContent, SkillDefinition } from './model';
 import { parseGameContent, validateGameContent } from './validation';
+/** コンテンツ検証テストに使う最小の有効な1ヒット攻撃。 */
 const attack = {
   kind: 'attack',
   target: 'selected',
@@ -13,6 +14,7 @@ const attack = {
   targetReference: 'before-effect',
   attached: [],
 } as const;
+/** 重複・参照・循環の検証に使う最小の有効な部分カタログを生成する。 */
 function fixture(): GameContent {
   const skills: SkillDefinition[] = ['knight-a1', 'knight-a2'].map((id) => ({
     id: id as SkillDefinition['id'],
@@ -60,6 +62,11 @@ function fixture(): GameContent {
     floors: [],
   };
 }
+/**
+ * 検証問題の文言を結合し、期待する拒否理由のテストに使う。
+ *
+ * @param data 検証に渡すテストデータ。
+ */
 const messages = (data: unknown) =>
   validateGameContent(data)
     .map((i) => i.message)
@@ -181,5 +188,18 @@ describe('content boundary', () => {
     { ...fixture(), skills: [{ ...fixture().skills[0], cooldown: 0.5 }] },
   ])('rejects malformed values', (input) => {
     expect(validateGameContent(input).length).toBeGreaterThan(0);
+  });
+});
+
+describe('battle execution data contracts', () => {
+  it('rejects attempts to redefine universal commands', () => {
+    const data = fixture();
+    data.skills.push({ ...data.skills[0]!, id: 'wait' });
+    expect(messages(data)).toContain('fixed free command');
+    data.skills[data.skills.length - 1] = {
+      ...data.skills[0]!,
+      id: 'basic-attack',
+    };
+    expect(messages(data)).toContain('fixed free command');
   });
 });

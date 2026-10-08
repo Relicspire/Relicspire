@@ -1,29 +1,68 @@
 import { JOB_IDS, type GameContent } from './model';
+/** 読み込み検証の問題箇所と理由。呼び出し元は複数の問題をまとめて表示できる。 */
 export interface DataIssue {
+  /** 不正データの箇所を示すパス。 */
   path: string;
+  /** 検証に失敗した理由。 */
   message: string;
 }
+/** 未知の値・データパス・エラー蓄積先を受け取る検証関数。問題をissuesへ追加する。 */
 type Check = (value: unknown, path: string, issues: DataIssue[]) => void;
+/**
+ * データパスと検証理由をエラー配列へ追加する。
+ *
+ * @param issues 検出した問題の蓄積先。
+ * @param path 問題箇所を示すデータパス。
+ * @param message 検証エラーの説明文。
+ */
 const fail = (issues: DataIssue[], path: string, message: string) => {
   issues.push({ path, message });
 };
+/**
+ * 上下限を満たす安全な整数の検証関数を生成する。
+ * 返す検証関数は値v・データパスp・エラー蓄積先eを受け取り、不正ならeへ問題を追加する。
+ *
+ * @param min 許可する下限（含む）。
+ * @param max 許可する上限（含む）。
+ */
 const integer =
   (min = 0, max = Number.MAX_SAFE_INTEGER): Check =>
   (v, p, e) => {
     if (typeof v !== 'number' || !Number.isSafeInteger(v) || v < min || v > max)
       fail(e, p, `Expected integer ${min}..${max}`);
   };
+/**
+ * 指定した値のいずれかに一致する検証関数を生成する。
+ * 返す検証関数は値v・データパスp・エラー蓄積先eを受け取り、不正ならeへ問題を追加する。
+ *
+ * @param values 許可する値の一覧。
+ */
 const choice =
   (...values: readonly unknown[]): Check =>
   (v, p, e) => {
     if (!values.includes(v)) fail(e, p, `Expected ${values.join(' | ')}`);
   };
+/** 真偽値だけを受け入れる検証関数。 */
 const bool: Check = choice(true, false);
+/**
+ * 指定正規表現に一致する文字列IDの検証関数を生成する。
+ * 返す検証関数は値v・データパスp・エラー蓄積先eを受け取り、不正ならeへ問題を追加する。
+ *
+ * @param pattern 文字列全体への一致に使う正規表現。
+ */
 const id =
   (pattern: RegExp): Check =>
   (v, p, e) => {
     if (typeof v !== 'string' || !pattern.test(v)) fail(e, p, 'Invalid ID');
   };
+/**
+ * 配列の長さと全要素を検証する関数を生成する。
+ * 返す検証関数は値v・データパスp・エラー蓄積先eを受け取り、不正ならeへ問題を追加する。
+ *
+ * @param item 配列の各要素に適用する検証関数。
+ * @param min 許可する配列長の下限。
+ * @param max 許可する配列長の上限。
+ */
 const array =
   (item: Check, min = 0, max = Number.MAX_SAFE_INTEGER): Check =>
   (v, p, e) => {
@@ -32,6 +71,13 @@ const array =
       fail(e, p, `Expected ${min}..${max} items`);
     v.forEach((x, i) => item(x, `${p}[${i}]`, e));
   };
+/**
+ * 必須・任意項目を検証し、未知のキーを拒否するオブジェクト検証関数を生成する。
+ * 返す検証関数は値v・データパスp・エラー蓄積先eを受け取り、不正ならeへ問題を追加する。
+ *
+ * @param fields 項目名と検証関数の対応表。
+ * @param optional 省略を許可する項目名。
+ */
 const object =
   (fields: Record<string, Check>, optional: string[] = []): Check =>
   (v, p, e) => {
@@ -44,6 +90,12 @@ const object =
       if (key in data || !optional.includes(key))
         check(data[key], `${p}.${key}`, e);
   };
+/**
+ * 候補のいずれかに適合する値を検証する。全候補不適合なら問題数が最少の候補のエラーを返す。
+ * 返す検証関数は値v・データパスp・エラー蓄積先eを受け取り、不正ならeへ問題を追加する。
+ *
+ * @param checks いずれか1つを満たせばよい検証関数の一覧。
+ */
 const union =
   (checks: Check[]): Check =>
   (v, p, e) => {
@@ -55,24 +107,43 @@ const union =
     if (!failures.some((errors) => errors.length === 0))
       e.push(...failures.reduce((a, b) => (a.length <= b.length ? a : b)));
   };
+/** 第1〜10階層の2桁番号に一致する正規表現部品。 */
 const floorPart = '(?:0[1-9]|10)';
+/** 許可されたジョブIDに一致する正規表現部品。 */
 const jobPart = `(?:${JOB_IDS.join('|')})`;
+/** ボス・守護者IDに一致する正規表現部品。 */
 const enemyPart = `(?:boss-${floorPart}|guardian-${floorPart}-0[1-5])`;
+/** ジョブのA/Bルート・ランク1〜3のノードIDに一致する正規表現部品。 */
 const nodeSkillPart = `${jobPart}-[ab][123]`;
+/** プレイヤー・敵スキルと基本コマンドIDの正規表現部品。 */
 const skillPart = `(?:${nodeSkillPart}|${enemyPart}-s[123]|basic-attack|wait)`;
+/**
+ * ID書式の正規表現部品を文字列全体への一致条件にして検証関数を生成する。
+ *
+ * @param pattern 先頭・末尾指定を含まないID書式の正規表現文字列。
+ */
 const match = (pattern: string) => id(new RegExp(`^${pattern}$`));
+/** 階層IDの書式を検証する。 */
 const floorId = match(`floor-${floorPart}`);
+/** 敵IDの書式を検証する。 */
 const enemyId = match(enemyPart);
+/** 使用可能なスキルID書式を検証する。 */
 const skillId = match(skillPart);
+/** 習得ノードIDの書式を検証する。 */
 const skillNodeId = match(nodeSkillPart);
+/** 共有スキル系統または独立スキルのCD IDを検証する。 */
 const cooldownId = match(`(?:${jobPart}-[ab]|${skillPart})`);
+/** 初期装備・遺物のID書式を検証する。 */
 const equipmentId = match(
   `(?:starter-(?:sword|staff|armor|charm|boots|ring)|relic-${floorPart}-0[1-5])`,
 );
+/** 階層内の探索ノードID書式を検証する。 */
 const nodeId = match(
   `floor-${floorPart}-(?:entry|boss|hall-[123]|alcove-[1-5])`,
 );
+/** 現行の無・火・氷・雷・光・闇属性を検証する。 */
 const element = choice('none', 'fire', 'ice', 'lightning', 'light', 'dark');
+/** 基礎能力値の必須項目と整数範囲を定義する。最終能力の上限は戦闘計算で適用する。 */
 const statsFields = {
   maxHp: integer(1),
   atk: integer(),
@@ -81,10 +152,12 @@ const statsFields = {
   mdef: integer(),
   spd: integer(1),
 };
+/** 装備の任意能力加算を検証する。未指定能力は加算0として扱う。 */
 const statBonuses = object(
   Object.fromEntries(Object.keys(statsFields).map((k) => [k, integer()])),
   Object.keys(statsFields),
 );
+/** 固定威力または発動時の背水条件による威力選択を検証する。 */
 const power = union([
   integer(),
   object({
@@ -94,6 +167,7 @@ const power = union([
     snapshot: choice('before-activation'),
   }),
 ]);
+/** 1ヒット攻撃の性能と能力参照時点の検証項目。 */
 const attackFields = {
   damageType: choice('physical', 'magic'),
   element: union([element, choice('chosen')]),
@@ -103,7 +177,9 @@ const attackFields = {
   actorReference: choice('before-activation'),
   targetReference: choice('before-effect'),
 };
+/** 攻撃性能だけを検証する。対象・付随効果はEffect側で扱う。 */
 const attack = object(attackFields);
+/** 現行の状態系統ごとに必要な性能項目を検証する。 */
 const status = union([
   object({
     familyId: choice(
@@ -136,6 +212,7 @@ const status = union([
     charges: choice(1),
   }),
 ]);
+/** 時間操作・詠唱妨害・状態付与・解除の検証項目。 */
 const utilityFields = [
   {
     kind: choice('shift'),
@@ -155,12 +232,15 @@ const utilityFields = [
     count: integer(1),
   },
 ];
+/** 被弾者にだけ束縛できる攻撃付随効果を検証する。 */
 const hit = union(
   utilityFields.map((fields) =>
     object({ ...fields, target: choice('hit-recipient') }),
   ),
 );
+/** 独立Effectで指定できる対象束縛を検証する。 */
 const target = choice('selected', 'all-allies', 'all-enemies', 'self');
+/** 現行Effectの構造を検証し、未対応の種類・余分な項目を拒否する。 */
 const effect = union([
   ...utilityFields.map((fields) => object({ ...fields, target })),
   object({
@@ -190,6 +270,7 @@ const effect = union([
     snapshot: choice('on-trigger'),
   }),
 ]);
+/** スキルの構造・時間・CD・対象規則・能力参照時点を検証する。 */
 const skill = object({
   id: skillId,
   target: choice(
@@ -211,6 +292,7 @@ const skill = object({
   elementChoices: array(element),
   effects: array(effect),
 });
+/** 習得ノードの費用・前提・ランク・置換グループの構造を検証する。 */
 const skillNode = object({
   id: skillNodeId,
   skillId: skillNodeId,
@@ -219,6 +301,7 @@ const skillNode = object({
   replacementGroup: cooldownId,
   rank: choice(1, 2, 3),
 });
+/** コンテンツ全体の構造検証。参照整合性と循環検出は構造確認後に行う。 */
 const schema = object({
   characters: array(
     object({
@@ -254,44 +337,48 @@ const schema = object({
     ]),
   ),
   enemies: array(
-    object({
-      id: enemyId,
-      stats: object(statsFields),
-      maxBreakGauge: integer(1),
-      weakness: element,
-      resistance: element,
-      breakResistance: integer(0, 10000),
-      knockbackResistance: integer(0, 10000),
-      cancelImmune: bool,
-      timeStopImmune: bool,
-      phases: array(
-        object({
-          id: id(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
-          hpThreshold: integer(0, 10000),
-          actions: array(
-            object({
-              skillId,
-              selection: choice(
-                'lowest-hp',
-                'highest-atk',
-                'highest-mag',
-                'highest-spd',
-                'all',
-                'self',
-              ),
-            }),
-            1,
-          ),
+    object(
+      {
+        id: enemyId,
+        stats: object(statsFields),
+        maxBreakGauge: integer(1),
+        weakness: element,
+        resistance: element,
+        immuneElements: array(element),
+        breakResistance: integer(0, 10000),
+        knockbackResistance: integer(0, 10000),
+        cancelImmune: bool,
+        timeStopImmune: bool,
+        phases: array(
+          object({
+            id: id(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+            hpThreshold: integer(0, 10000),
+            actions: array(
+              object({
+                skillId,
+                selection: choice(
+                  'lowest-hp',
+                  'highest-atk',
+                  'highest-mag',
+                  'highest-spd',
+                  'all',
+                  'self',
+                ),
+              }),
+              1,
+            ),
+          }),
+          1,
+        ),
+        reward: object({
+          skillPointsPerCharacter: integer(),
+          equipment: array(object({ id: equipmentId, quantity: integer(1) })),
+          unlockFloorId: union([floorId, choice(null)]),
+          finalClear: bool,
         }),
-        1,
-      ),
-      reward: object({
-        skillPointsPerCharacter: integer(),
-        equipment: array(object({ id: equipmentId, quantity: integer(1) })),
-        unlockFloorId: union([floorId, choice(null)]),
-        finalClear: bool,
-      }),
-    }),
+      },
+      ['immuneElements'],
+    ),
   ),
   floors: array(
     object({
@@ -309,12 +396,23 @@ const schema = object({
   ),
 });
 
-/** Validate unknown JSON before exposing a typed catalog. Partial catalogs are allowed for fixtures/MVP. */
+/**
+ * 未知データの構造・値・ID・参照・前提循環・現行効果制約を検証する。部分カタログも許可する。
+ *
+ * @param input 型が未確認のコンテンツ。境界で構造と参照を検証する。
+ * @returns 全検証問題の一覧。問題なしなら空配列。
+ */
 export function validateGameContent(input: unknown): DataIssue[] {
   const issues: DataIssue[] = [];
   schema(input, 'content', issues);
   if (issues.length) return issues;
   const data = input as GameContent;
+  /**
+   * 定義のIDを収集し、同じ一覧内の重複を検出する。
+   *
+   * @param items IDを収集する定義の配列。
+   * @param path 問題箇所を示すデータパス。
+   */
   const collect = (items: { id: string }[], path: string) => {
     const ids = new Set<string>();
     items.forEach((item, i) => {
@@ -336,6 +434,13 @@ export function validateGameContent(input: unknown): DataIssue[] {
     data.floors.flatMap((f) => f.nodes),
     'floorNodes',
   );
+  /**
+   * 参照IDが対応する定義集合に存在するかを検証する。
+   *
+   * @param ids 参照先として存在するIDの集合。
+   * @param value 参照先として要求するID。
+   * @param path 問題箇所を示すデータパス。
+   */
   const ref = (ids: Set<string>, value: string, path: string) => {
     if (!ids.has(value)) fail(issues, path, `Missing reference: ${value}`);
   };
@@ -375,6 +480,11 @@ export function validateGameContent(input: unknown): DataIssue[] {
   );
   const visiting = new Set<string>();
   const visited = new Set<string>();
+  /**
+   * 前提ノードを深さ優先で探索し、探索中ノードへの再訪から循環を検出する。
+   *
+   * @param key 探索する習得ノードID。
+   */
   const visit = (key: string) => {
     if (visiting.has(key)) {
       fail(issues, key, 'Cyclic skill prerequisites');
@@ -389,6 +499,42 @@ export function validateGameContent(input: unknown): DataIssue[] {
   nodes.forEach((n) => visit(n.id));
   data.skills.forEach((s) => {
     const path = s.id;
+    if (
+      s.id === 'wait' &&
+      (s.target !== 'self' ||
+        s.castTime !== 0 ||
+        s.delay !== 20 ||
+        s.cooldown !== 0 ||
+        s.cooldownId !== 'wait' ||
+        s.elementChoices.length !== 0 ||
+        s.effects.length !== 0)
+    )
+      fail(issues, path, 'Wait must use the fixed free command definition');
+    if (s.id === 'basic-attack') {
+      const effect = s.effects[0];
+      if (
+        s.target !== 'enemy-single' ||
+        s.castTime !== 0 ||
+        s.delay !== 100 ||
+        s.cooldown !== 0 ||
+        s.cooldownId !== 'basic-attack' ||
+        s.elementChoices.length !== 0 ||
+        s.effects.length !== 1 ||
+        effect?.kind !== 'attack' ||
+        effect.target !== 'selected' ||
+        effect.damageType !== 'physical' ||
+        effect.element !== 'none' ||
+        effect.power !== 100 ||
+        effect.breakDamage !== 5 ||
+        effect.attached.length !== 0
+      )
+        fail(
+          issues,
+          path,
+          'Basic attack must use the fixed free command definition',
+        );
+    }
+
     if (
       s.effects.filter((e) => e.kind === 'attack' || e.kind === 'trap').length >
       1
@@ -440,6 +586,12 @@ export function validateGameContent(input: unknown): DataIssue[] {
     }
   });
   data.enemies.forEach((e) => {
+    const attributes = [e.weakness, e.resistance, ...(e.immuneElements ?? [])];
+    if (
+      attributes.includes('none') ||
+      new Set(attributes).size !== attributes.length
+    )
+      fail(issues, e.id, 'Element categories must be distinct and non-neutral');
     collect(e.phases, `${e.id}.phases`);
     e.phases.forEach((p, i) => {
       if (
@@ -456,6 +608,10 @@ export function validateGameContent(input: unknown): DataIssue[] {
         if (!a.skillId.startsWith(`${e.id}-s`))
           fail(issues, e.id, 'Enemy action belongs to another owner');
         const s = data.skills.find((s) => s.id === a.skillId);
+        if (s && s.cooldown !== 0)
+          fail(issues, e.id, 'Current enemy skills must have zero cooldown');
+        if (s && s.elementChoices.length !== 0)
+          fail(issues, e.id, 'Enemy skill elements must be fixed');
         if (
           s &&
           ((a.selection === 'self' && s.target !== 'self') ||
@@ -506,6 +662,12 @@ export function validateGameContent(input: unknown): DataIssue[] {
   });
   return issues;
 }
+/**
+ * 読み込み境界でコンテンツを検証し、成功時に外部変更から独立したコピーを返す。
+ *
+ * @param input 型が未確認のコンテンツ。境界で構造と参照を検証する。
+ * @returns 検証済みコンテンツ。不正ならパス付きの例外を投げる。
+ */
 export function parseGameContent(input: unknown): GameContent {
   const issues = validateGameContent(input);
   if (issues.length)
