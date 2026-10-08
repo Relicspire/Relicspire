@@ -4,29 +4,21 @@ import type {
   ParticipantId,
 } from '../data/battle';
 import type {
+  BattleReward,
   CharacterId,
   EnemyId,
-  EquipmentSlots,
   GameContent,
-  JobId,
-  SkillNodeId,
-  BattleReward,
   SkillId,
   TU,
 } from '../data/model';
-/** 戦闘開始時に確定した1人分のジョブ・習得・6枠装備。 */
-export interface PartyBuild {
-  id: CharacterId;
-  /** 現在選択しているジョブID。 */
-  jobId: JobId;
-  /** 習得済みノードID。上位置換で下位が隠れても習得記録は保持する。 */
-  learnedSkills: SkillNodeId[];
-  equipment: EquipmentSlots;
-}
+import type { FormationContext, PartyBuild } from '../party/types';
+export type { PartyBuild } from '../party/types';
 /** 参加者順を固定した3人の編成と、今回戦う敵ID。 */
 export interface BattleSetup {
   party: [PartyBuild, PartyBuild, PartyBuild];
   enemyId: EnemyId;
+  /** 戦闘前に検証済みの進行。省略時は初期予算3・守護者未討伐として編成を検証する。 */
+  context?: FormationContext;
 }
 /** 結果再現とデバッグに使う構造化ログ。論理時刻とログ連番で順序を保持する。 */
 export interface BattleLogEntry {

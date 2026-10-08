@@ -5,6 +5,9 @@ import type {
   StatusEffect,
 } from '../data/battle';
 import type { Effect, StatusSpec } from '../data/model';
+import { actorSnapshot, damageAmount, effectiveStats } from './calculations';
+import { Engine } from './engine';
+import { attackPayload, fixture, skill } from './fixtures.test-support';
 import {
   advanceBattle,
   checkCommand,
@@ -18,9 +21,6 @@ import {
   retryBattle,
   submitCommand,
 } from './index';
-import { actorSnapshot, damageAmount, effectiveStats } from './calculations';
-import { Engine } from './engine';
-import { attackPayload, fixture, skill } from './fixtures.test-support';
 import type { BattleSession, PlayerCommand } from './types';
 /**
  * テストセッションの固定敵枠を取得する。
@@ -1481,7 +1481,7 @@ describe('unit boundaries and complete deterministic sample battle', () => {
     const next = fixture();
     next.setup.party[0].learnedSkills = ['knight-a3'];
     expect(() => createBattle(next.content, next.setup)).toThrow(
-      'prerequisites',
+      'prerequisite',
     );
   });
   it('enemy HP threshold jumps keep an existing cast and never return to an earlier phase', () => {

@@ -11,8 +11,8 @@ import {
   type SkillNodeId,
   type Stats,
 } from '../data/model';
-import type { BattleSession, BattleSetup } from './types';
 import { createBattle } from './index';
+import type { BattleSession, BattleSetup } from './types';
 /** 戦闘テスト用の共通基礎能力。正式コンテンツの値ではない。 */
 export const STATS: Stats = {
   maxHp: 300,
@@ -180,6 +180,20 @@ export function fixture(
       };
     }) as BattleSetup['party'],
     enemyId: 'boss-01',
+    context: {
+      defeatedEnemyIds: [
+        'boss-01',
+        'boss-02',
+        'boss-03',
+        'boss-04',
+        'boss-05',
+        'boss-06',
+        'boss-07',
+        'boss-08',
+        'boss-09',
+      ],
+      inBattle: false,
+    },
   };
   return createBattle(content, setup);
 }

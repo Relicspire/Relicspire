@@ -11,6 +11,7 @@ import type {
   Stats,
 } from '../data/model';
 import { parseGameContent } from '../data/validation';
+import { validateFormation } from '../party/validation';
 import { clampStats, initialWaitTU } from './calculations';
 import { Engine } from './engine';
 import type {
@@ -21,8 +22,8 @@ import type {
   PartyBuild,
   PlayerCommand,
 } from './types';
-export type * from './types';
 export { effectiveStats } from './calculations';
+export type * from './types';
 /**
  * 確定ビルドから装備加算後の基礎値と開始待機を持つ味方を生成する。
  *
@@ -99,6 +100,17 @@ export function createBattle<T = null>(
     setup.party.some((p, i) => p.id !== `party-${i + 1}`)
   )
     throw new Error('Party slots must be party-1, party-2, party-3');
+  const context = setup.context ?? { defeatedEnemyIds: [], inBattle: false };
+  if (context.inBattle)
+    throw new Error('Cannot start a battle while in battle');
+  const formationIssues = validateFormation(content, setup.party, context);
+  if (formationIssues.length)
+    throw new Error(
+      formationIssues
+        .map((i) => `${i.path}: ${i.code}: ${i.message}`)
+        .join('\n'),
+    );
+
   const def = content.enemies.find((e) => e.id === setup.enemyId);
   if (!def) throw new Error(`Unknown enemy: ${setup.enemyId}`);
   const finalStats = clampStats(def.stats);
