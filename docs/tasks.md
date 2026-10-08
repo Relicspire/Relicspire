@@ -103,14 +103,14 @@
 
 ## 2. P0: プロジェクト基盤
 
-- [ ] Vite + React + TypeScriptプロジェクトを作成する
-- [ ] Tailwind CSS、Zustand、PixiJS、idb-keyvalを導入する
-- [ ] Vitest、React Testing Library、happy-dom、fake-indexeddbを導入する
-- [ ] ESLint、Prettier、TypeScript strict設定と実行スクリプトを整備する
-- [ ] `src/` を `app`、`components`、`features`、`game`、`content`、`store`、`storage`、`rendering`、`assets` に分ける
-- [ ] GitHub Pages用のVite `base` とSPA起動方式を設定する
-- [ ] 開発・テスト・ビルド手順を `README.md` に記載する
-- [ ] GitHub Actionsに依存関係キャッシュ、型チェック、Lint、テスト、ビルドを追加する
+- [x] Vite + React + TypeScriptプロジェクトを作成する
+- [x] Tailwind CSS、Zustand、PixiJS、idb-keyvalを導入する
+- [x] Vitest、React Testing Library、happy-dom、fake-indexeddbを導入する
+- [x] ESLint、Prettier、TypeScript strict設定と実行スクリプトを整備する
+- [x] `src/` を `app`、`components`、`features`、`game`、`content`、`store`、`storage`、`rendering`、`assets` に分ける
+- [x] GitHub Pages用のVite `base` とSPA起動方式を設定する
+- [x] 開発・テスト・ビルド手順を `README.md` に記載する
+- [x] GitHub Actionsに依存関係キャッシュ、型チェック、Lint、テスト、ビルドを追加する
 
 **完了条件:** クリーン環境で `npm ci` 後に全品質チェックと本番ビルドが成功し、空のアプリをローカル表示できる。
 
