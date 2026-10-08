@@ -35,6 +35,7 @@ import type {
   EnemyForecast,
   PlayerCommand,
 } from './types';
+/** 全生存味方が無料で使う通常攻撃の固定定義。 */
 const BASIC: SkillDefinition = {
   id: 'basic-attack',
   target: 'enemy-single',
@@ -60,6 +61,7 @@ const BASIC: SkillDefinition = {
     },
   ],
 };
+/** 効果なし・基礎ディレイ20 TUの無料待機コマンド。 */
 const WAIT: SkillDefinition = {
   ...BASIC,
   id: 'wait',
@@ -68,6 +70,7 @@ const WAIT: SkillDefinition = {
   cooldownId: 'wait',
   effects: [],
 };
+/** 同時刻イベントの処理優先度。小さい値から戦闘全体に適用する。 */
 const priorities: Record<TimelineEvent['kind'], number> = {
   'time-stop-end': 0,
   'status-expiry': 1,
@@ -77,47 +80,86 @@ const priorities: Record<TimelineEvent['kind'], number> = {
   'cast-complete': 4,
   ready: 5,
 };
+/**
+ * 通常タイマーが現在TUまでに到達しているかを判定する。凍結タイマーは未到達扱い。
+ *
+ * @param timer 絶対時刻または凍結残りTUを保持するタイマー。
+ * @param now 戦闘の現在時刻（整数TU）。
+ */
 const due = (timer: Timer, now: number) =>
   timer.kind === 'running' && timer.at <= now;
+/**
+ * 生存・非ブレイク・非停止・未終了で、反応行動の資格があるかを判定する。
+ *
+ * @param p 処理対象の戦闘参加者。
+ */
 export const canReact = (p: BattleParticipant) =>
   p.hp > 0 &&
   p.action.kind !== 'broken' &&
   p.action.kind !== 'finished' &&
   p.timeStopUntil === null;
+/**
+ * 状態系統を解除判定用の強化または弱体へ分類する。
+ *
+ * @param spec 付与する状態効果の性能。
+ */
 const polarity = (spec: StatusSpec) =>
   ['atk-down', 'mag-down', 'spd-down', 'poison', 'taunt', 'time-stop'].includes(
     spec.familyId,
   )
     ? 'debuff'
     : 'buff';
+/** 1処理単位内の自己蘇生予約、反応実行済みID、追撃候補を保持する内部状態。 */
 interface Unit {
+  /** 死亡時に保存し、処理単位の末尾で解決する自己蘇生率。 */
   revives: Map<ParticipantId, number>;
+  /** 同じ反撃・追撃を1処理単位で再実行しないための状態ID集合。 */
   usedReactions: Set<number>;
+  /** 最初にHPダメージを与えた敵へ束縛した追撃候補。 */
   follows: {
     actorId: ParticipantId;
     statusId: number;
     targetId: ParticipantId;
   }[];
+  /** 基本行動が最初の敵HPダメージを既に記録したか。 */
   firstHit: boolean;
 }
+/** 1処理単位用の空の反応記録・蘇生予約・追撃候補を生成する。 */
 const unit = (): Unit => ({
   revives: new Map(),
   usedReactions: new Set(),
   follows: [],
   firstHit: false,
 });
-/** Internal mutation is confined to a cloned session by the public functional API. */
+/** コピー済みの戦闘状態だけを変更する内部エンジン。外部APIは更新前にセッションを複製する。 */
 export class Engine {
+  /**
+   * 検証済みコンテンツと更新用のコピーを内部エンジンへ渡す。
+   *
+   * @param content 検証済みのゲームコンテンツ。
+   * @param state 内部で更新するコピー済みの戦闘状態。
+   * @param log 追記先の構造化戦闘ログ配列。
+   */
   constructor(
     readonly content: GameContent,
     readonly state: BattleState,
     readonly log: BattleLogEntry[],
   ) {}
+  /**
+   * 参加者IDから現在の参加者を検索する。存在しないIDは例外にする。
+   *
+   * @param id 検索するID。
+   */
   participant(id: ParticipantId): BattleParticipant {
     const found = this.state.participants.find((p) => p.id === id);
     if (!found) throw new Error(`Unknown participant: ${id}`);
     return found;
   }
+  /**
+   * 無料コマンドまたはコンテンツからスキル性能を取得する。未知のIDは例外にする。
+   *
+   * @param id 検索するID。
+   */
   skill(id: SkillId): SkillDefinition {
     if (id === 'basic-attack') return BASIC;
     if (id === 'wait') return WAIT;
@@ -125,11 +167,26 @@ export class Engine {
     if (!found) throw new Error(`Unknown skill: ${id}`);
     return found;
   }
+  /**
+   * 参加者が敵なら敵定義、味方ならnullを返す。
+   *
+   * @param p 処理対象の戦闘参加者。
+   */
   enemy(p: BattleParticipant): EnemyDefinition | null {
     return p.side === 'enemy'
       ? (this.content.enemies.find((e) => e.id === p.id) ?? null)
       : null;
   }
+  /**
+   * 現在TUとログ連番を付けて構造化ログを追記する。
+   *
+   * @param kind 記録するログまたは除去処理の種別。
+   * @param actorId 処理元の参加者ID。該当しない場合はnull。
+   * @param targetId 効果を受ける参加者ID。該当しないログではnull。
+   * @param amount HP損失・回復量・TUなどの数値。該当しない場合はnull。
+   * @param detail ログの補足情報。該当しない場合はnull。
+   * @param skillId 記録対象のスキルID。該当しない場合はnull。
+   */
   record(
     kind: BattleLogEntry['kind'],
     actorId: ParticipantId | null = null,
@@ -149,11 +206,22 @@ export class Engine {
       skillId,
     });
   }
+  /**
+   * 対象の停止状態に応じて絶対時刻または凍結残りTUのタイマーを生成する。
+   *
+   * @param p 処理対象の戦闘参加者。
+   * @param duration 現在時刻からの持続または待機TU。
+   */
   timer(p: BattleParticipant, duration: number): Timer {
     return p.timeStopUntil === null
       ? { kind: 'running', at: this.state.now + duration }
       : { kind: 'frozen', remaining: duration };
   }
+  /**
+   * 待機・詠唱・ブレイクの有効な行動タイマーを取得する。予定なしならnull。
+   *
+   * @param p 処理対象の戦闘参加者。
+   */
   actionTimer(p: BattleParticipant): Timer | null {
     const a = p.action;
     return a.kind === 'waiting'
@@ -164,6 +232,12 @@ export class Engine {
           ? a.break.recovers
           : null;
   }
+  /**
+   * 本人の行動・CD・通常状態・定期効果・罠へ同じ時間変換を適用する。停止自身の期限は除外する。
+   *
+   * @param p 処理対象の戦闘参加者。
+   * @param transform 各タイマーに適用する変換関数。
+   */
   transformTimers(p: BattleParticipant, transform: (timer: Timer) => Timer) {
     const a = p.action;
     if (a.kind === 'waiting') a.ready = transform(a.ready);
@@ -178,6 +252,11 @@ export class Engine {
     for (const t of this.state.traps)
       if (t.sourceId === p.id) t.expires = transform(t.expires);
   }
+  /**
+   * 時間停止を解除し、凍結した予定を現在TUからの絶対時刻へ復元する。
+   *
+   * @param p 処理対象の戦闘参加者。
+   */
   thaw(p: BattleParticipant) {
     p.timeStopUntil = null;
     this.transformTimers(p, (t) =>
@@ -186,6 +265,13 @@ export class Engine {
         : t,
     );
   }
+  /**
+   * 指定状態を除去してログへ記録する。時間停止なら関連予定も凍結解除する。
+   *
+   * @param p 処理対象の戦闘参加者。
+   * @param s 除去する付与済み状態。
+   * @param kind 自然終了ならexpire、スキル解除ならdispel。
+   */
   removeStatus(
     p: BattleParticipant,
     s: StatusEffect,
@@ -195,6 +281,15 @@ export class Engine {
     if (s.spec.familyId === 'time-stop') this.thaw(p);
     this.record(kind, s.sourceId, p.id, null, s.spec.familyId);
   }
+  /**
+   * 新規状態を付与する。同系統が残っていれば付与者・性能・周期・回数を保持して期限だけ更新する。
+   *
+   * @param source 状態を付与する参加者。
+   * @param target 効果の対象。
+   * @param spec 付与する状態効果の性能。
+   * @param duration 現在時刻からの持続または待機TU。
+   * @param dispellable 解除スキルで除去できるか。
+   */
   applyStatus(
     source: BattleParticipant,
     target: BattleParticipant,
@@ -247,6 +342,13 @@ export class Engine {
     target.statuses.push(status);
     this.record('status', source.id, target.id, duration, spec.familyId);
   }
+  /**
+   * 陣営・生死・自身除外・待機状態から対象の適格性を判定する。
+   *
+   * @param actor 効果の実行者。
+   * @param target 効果の対象。
+   * @param rule 対象選択と適格性を決める規則。
+   */
   eligible(
     actor: BattleParticipant,
     target: BattleParticipant,
@@ -274,11 +376,18 @@ export class Engine {
     }
     return true;
   }
+  /**
+   * スキル対象規則に適合する参加者IDを参加者順で取得する。
+   *
+   * @param actor 効果の実行者。
+   * @param skill 対象規則と性能を参照するスキル定義。
+   */
   targetIds(actor: BattleParticipant, skill: SkillDefinition): ParticipantId[] {
     return this.state.participants
       .filter((p) => this.eligible(actor, p, skill.target))
       .map((p) => p.id);
   }
+  /** 最優先の到達済みイベントが味方の入力待ちなら、その参加者を返す。 */
   inputActor(): Extract<BattleParticipant, { side: 'party' }> | null {
     if (this.state.result !== 'ongoing') return null;
     const event = this.state.timeline[0];
@@ -290,6 +399,11 @@ export class Engine {
     }
     return null;
   }
+  /**
+   * 手番、習得、上位置換、CD、属性、選択対象を検証して拒否理由を返す。
+   *
+   * @param command 使用スキル・予約対象・属性選択を含むコマンド。プレイヤー入力では行動者IDも含む。
+   */
   checkCommand(command: PlayerCommand): CommandCheck {
     const actor = this.state.participants.find((p) => p.id === command.actorId);
     if (
@@ -353,6 +467,16 @@ export class Engine {
     }
     return { ok: true };
   }
+  /**
+   * 実HP損失を適用し、死亡時に自己蘇生資格を予約して行動・状態・罠を除去する。
+   *
+   * @param target 効果の対象。
+   * @param amount 適用する非負のHPダメージ。
+   * @param source 効果の付与者、またはHP損失を起こした参加者ID。
+   * @param u 当該処理単位の反応実行記録と自己蘇生予約。
+   * @param detail 通常攻撃・反応・毒・反射などのダメージ種別。
+   * @returns 実際に失ったHP量。
+   */
   loseHp(
     target: BattleParticipant,
     amount: number,
@@ -385,6 +509,12 @@ export class Engine {
     }
     return lost;
   }
+  /**
+   * 戦闘不能味方を指定HP率で蘇生し、状態なしの固定50 TU待機を設定する。CDは維持する。
+   *
+   * @param target 効果の対象。
+   * @param ratio 最大HPに対する蘇生率（10000が100%）。
+   */
   revive(target: BattleParticipant, ratio: number) {
     if (target.hp !== 0 || target.side !== 'party') return;
     target.hp = Math.max(1, Math.floor((target.stats.maxHp * ratio) / 10000));
@@ -396,6 +526,11 @@ export class Engine {
     };
     this.record('revive', target.id, target.id, target.hp);
   }
+  /**
+   * 自己蘇生を参加者順に解決してから勝敗、続行時のHPフェーズ移行を確定する。
+   *
+   * @param u 当該処理単位の反応実行記録と自己蘇生予約。
+   */
   finishUnit(u: Unit) {
     for (const p of this.state.participants) {
       const ratio = u.revives.get(p.id);
@@ -411,7 +546,7 @@ export class Engine {
       this.state.result = aliveParty ? 'victory' : 'defeat';
       this.state.timeline = [];
       this.state.traps = [];
-      // No scheduled timer survives a finished battle; participant HP remains available in the result.
+      // 終了後の予定はすべて破棄し、参加者の最終HPは結果表示用に保持する。
       for (const p of this.state.participants) {
         p.statuses = [];
         p.cooldowns = [];
@@ -439,11 +574,23 @@ export class Engine {
         }
       }
   }
+  /**
+   * 現在フェーズの行動列を1要素消費し、末尾から先頭へ循環させる。
+   *
+   * @param p 処理対象の戦闘参加者。
+   */
   consumeEnemyAction(p: BattleParticipant) {
     if (p.side !== 'enemy') return;
     const phase = this.enemy(p)!.phases[p.phaseIndex]!;
     p.actionIndex = (p.actionIndex + 1) % phase.actions.length;
   }
+  /**
+   * 時間操作・キャンセル・状態付与・解除を現在の対象状態に適用する。
+   *
+   * @param actor 効果の実行者。
+   * @param target 効果の対象。
+   * @param effect 今回適用する効果データ。
+   */
   utility(
     actor: BattleParticipant,
     target: BattleParticipant,
@@ -519,6 +666,19 @@ export class Engine {
           : Math.max(1, timer.remaining - amount);
     this.record('shift', actor.id, target.id, amount, effect.direction);
   }
+  /**
+   * 1ヒットの被弾・付随効果・反射・反撃を解決し、必要な追撃候補を記録する。
+   *
+   * @param actor 効果の実行者。
+   * @param original かばうを適用する前の攻撃対象。
+   * @param payload 今回の1ヒットの攻撃性能。
+   * @param attached 実際の被弾者に順序規則に従って適用する付随効果。
+   * @param snapshot 基本行動または反応の発動直前に固定した能力。
+   * @param command 確定済みコマンド。選択式攻撃の属性を参照する。
+   * @param u 当該処理単位の反応実行記録と自己蘇生予約。
+   * @param basic trueなら基本行動としてかばう・反射・反撃・追撃候補を処理する。反応攻撃ではfalse。
+   * @param single trueなら単体攻撃としてかばうを判定する。
+   */
   attack(
     actor: BattleParticipant,
     original: BattleParticipant,
@@ -568,7 +728,7 @@ export class Engine {
         target.breakGauge - breakAmount(payload.breakDamage, element, def!),
       );
       if (target.breakGauge === 0) {
-        // casting/acting already consumed this column; waiting/ready have not.
+        // 詠唱中・処理中は開始時に行動列を消費済み。待機・未処理手番だけここで消費する。
         if (target.action.kind !== 'casting' && target.action.kind !== 'acting')
           this.consumeEnemyAction(target);
         target.action = {
@@ -630,6 +790,12 @@ export class Engine {
       }
     }
   }
+  /**
+   * 発動時の能力と対象集合を固定し、全Effect・追撃・蘇生・勝敗・終了待機を解決する。
+   *
+   * @param actor 効果の実行者。
+   * @param command 確定済みまたは詠唱予約済みのコマンド。
+   */
   activate(actor: BattleParticipant, command: CommandReservation) {
     const skill = this.skill(command.skillId);
     const snapshot = actorSnapshot(actor);
@@ -725,6 +891,16 @@ export class Engine {
         ),
       };
   }
+  /**
+   * 現在の1対象に攻撃・回復・罠・補助効果を適用する。蘇生は呼び出し元で扱う。
+   *
+   * @param actor 効果の実行者。
+   * @param target 効果の対象。
+   * @param effect 今回適用する効果データ。
+   * @param snapshot 発動直前に固定した行動者の能力とHP。
+   * @param command 使用スキル・予約対象・属性選択を含むコマンド。プレイヤー入力では行動者IDも含む。
+   * @param u 当該処理単位の反応実行記録と自己蘇生予約。
+   */
   effect(
     actor: BattleParticipant,
     target: BattleParticipant,
@@ -769,6 +945,12 @@ export class Engine {
       this.record('trap', actor.id, target.id, effect.duration, 'set');
     } else if (effect.kind !== 'revive') this.utility(actor, target, effect);
   }
+  /**
+   * CDを確定時刻から開始し、詠唱を予約するか即時効果を発動する。
+   *
+   * @param actor 効果の実行者。
+   * @param command 使用スキル・予約対象・属性選択を含むコマンド。プレイヤー入力では行動者IDも含む。
+   */
   startCommand(actor: BattleParticipant, command: CommandReservation) {
     const skill = this.skill(command.skillId);
     actor.cooldowns = actor.cooldowns.filter((c) => c.id !== skill.cooldownId);
@@ -803,6 +985,11 @@ export class Engine {
       );
     } else this.activate(actor, command);
   }
+  /**
+   * 現在フェーズと行動列からコマンドを作り、公開規則と挑発で単体対象を確定する。
+   *
+   * @param p 処理対象の戦闘参加者。
+   */
   enemyCommand(p: BattleParticipant): CommandReservation {
     if (p.side !== 'enemy') throw new Error('Expected enemy');
     const action = this.enemy(p)!.phases[p.phaseIndex]!.actions[p.actionIndex]!;
@@ -812,6 +999,11 @@ export class Engine {
       const targets = this.state.participants.filter((target) =>
         this.eligible(p, target, skill.target),
       );
+      /**
+       * 敵AIの公開された対象規則に対応するHPまたは最終能力を取得する。
+       *
+       * @param target 効果の対象。
+       */
       const metric = (target: BattleParticipant) =>
         action.selection === 'lowest-hp'
           ? target.hp
@@ -840,6 +1032,12 @@ export class Engine {
       chosenElement: skill.elementChoices[0] ?? null,
     };
   }
+  /**
+   * 敵の行動開始前に罠を設置順で解決し、開始可能なら行動列を消費してコマンドを確定する。
+   *
+   * @param p 処理対象の戦闘参加者。
+   * @param stopAfterUnit trueなら1処理単位の解決後に停止する。既定は次の入力または終了まで進める。
+   */
   startEnemy(p: BattleParticipant, stopAfterUnit = false) {
     const traps = this.state.traps
       .filter((t) => t.targetId === p.id)
@@ -880,6 +1078,7 @@ export class Engine {
     this.consumeEnemyAction(p);
     this.startCommand(p, command);
   }
+  /** 現在の有効タイマーから予定を再構築する。既存予定のIDを維持し、消えた予定を除去する。 */
   syncTimeline() {
     if (this.state.result !== 'ongoing') {
       this.state.timeline = [];
@@ -887,6 +1086,14 @@ export class Engine {
     }
     const previous = this.state.timeline;
     const next: TimelineEvent[] = [];
+    /**
+     * 凍結していないタイマーからイベントを生成し、同じ予定の既存IDを引き継ぐ。
+     *
+     * @param p 処理対象の戦闘参加者。
+     * @param timer 絶対時刻または凍結残りTUを保持するタイマー。
+     * @param details イベント種別と、必要に応じた状態IDまたは罠連番。
+     * @param sequence 同じ参加者・優先度内の付与順。
+     */
     const add = (
       p: BattleParticipant,
       timer: Timer,
@@ -956,6 +1163,11 @@ export class Engine {
       if (a.kind === 'broken')
         add(p, a.break.recovers, { kind: 'break-recovery' }, 0);
     });
+    /**
+     * 同着解決用の固定参加者順を取得する。
+     *
+     * @param id 検索するID。
+     */
     const position = (id: ParticipantId) =>
       this.state.participants.findIndex((p) => p.id === id);
     next.sort(
@@ -967,8 +1179,13 @@ export class Engine {
     );
     this.state.timeline = next;
   }
+  /**
+   * 時刻・種別・参加者・付与順で予定を再評価し、味方入力または終了まで進める。
+   *
+   * @param stopAfterUnit trueなら1処理単位の解決後に停止する。既定は次の入力または終了まで進める。
+   */
   advance(stopAfterUnit = false) {
-    // Each dispatch re-derives the queue from authoritative timers. Removed/delayed events cannot run stale.
+    // 各処理で現在の有効タイマーから予定を再構築し、削除・延期された古い予定を実行しない。
     while (this.state.result === 'ongoing') {
       this.syncTimeline();
       const event = this.state.timeline[0];
@@ -1041,6 +1258,11 @@ export class Engine {
     }
     this.syncTimeline();
   }
+  /**
+   * 現在の敵予定を表示用の予告へ変換する。停止中は絶対時刻を示さず残りTUを返す。
+   *
+   * @param p 処理対象の戦闘参加者。
+   */
   forecast(p: BattleParticipant): EnemyForecast {
     if (p.side !== 'enemy') throw new Error('Expected enemy');
     const isCasting = p.action.kind === 'casting';

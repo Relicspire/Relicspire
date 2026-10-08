@@ -23,6 +23,13 @@ import type {
 } from './types';
 export type * from './types';
 export { effectiveStats } from './calculations';
+/**
+ * 確定ビルドから装備加算後の基礎値と開始待機を持つ味方を生成する。
+ *
+ * @param content 検証済みのゲームコンテンツ。
+ * @param build 対象キャラクターのジョブ・習得・装備。
+ * @param slot 参加者順を決める0〜2の味方スロット。
+ */
 function buildParticipant(
   content: GameContent,
   build: PartyBuild,
@@ -73,7 +80,14 @@ function buildParticipant(
     timeStopUntil: null,
   };
 }
-/** Initialize at TU0, then stop at the first party input (enemy events may precede it). */
+/**
+ * コンテンツを検証し、TU0から最初の入力または戦闘終了まで初期化する。
+ *
+ * @param input ゲームコンテンツ。型付きの値でも実行時に検証する。
+ * @param setup 順序付きの3人の確定編成と敵ID。
+ * @param preBattle 呼び出し元が保存済みの戦闘前進行。コピーして保持し、内容を変更しない。
+ * @returns 最初の入力待ちまたは終了状態の新しいセッション。
+ */
 export function createBattle<T = null>(
   input: GameContent,
   setup: BattleSetup,
@@ -132,6 +146,12 @@ export function createBattle<T = null>(
   engine.advance();
   return session;
 }
+/**
+ * 有効予定を入力待ちまたは終了まで進める。入力待ち中に再度呼んでもTUは進まない。
+ *
+ * @param session 更新または照会対象の戦闘セッション。入力オブジェクトは変更しない。
+ * @param options stopAfterUnitがtrueなら1処理単位ごとに停止する。省略時は自動進行。
+ */
 export function advanceBattle<T>(
   session: BattleSession<T>,
   options: { stopAfterUnit?: boolean } = {},
@@ -142,6 +162,13 @@ export function advanceBattle<T>(
   );
   return next;
 }
+/**
+ * コマンドの手番・習得・上位自動置換・CD・属性・対象を状態変更なしで検証する。
+ *
+ * @param session 更新または照会対象の戦闘セッション。入力オブジェクトは変更しない。
+ * @param command 使用スキル・予約対象・属性選択を含むコマンド。プレイヤー入力では行動者IDも含む。
+ * @returns 使用可否と、不正時の理由。
+ */
 export function checkCommand<T>(
   session: BattleSession<T>,
   command: PlayerCommand,
@@ -150,6 +177,13 @@ export function checkCommand<T>(
     command,
   );
 }
+/**
+ * コマンドを原子的に確定する。不正入力では元セッションをそのまま返す。
+ *
+ * @param session 更新または照会対象の戦闘セッション。入力オブジェクトは変更しない。
+ * @param command 使用スキル・予約対象・属性選択を含むコマンド。プレイヤー入力では行動者IDも含む。
+ * @param options advanceをfalseにすると、確定した処理だけを実行して後続イベント前で止まる。
+ */
 export function submitCommand<T>(
   session: BattleSession<T>,
   command: PlayerCommand,
@@ -165,6 +199,11 @@ export function submitCommand<T>(
   else engine.syncTimeline();
   return { ok: true, session: next };
 }
+/**
+ * 現在入力を待っている味方のIDを返す。敵・未到達・終了ならnull。
+ *
+ * @param session 更新または照会対象の戦闘セッション。入力オブジェクトは変更しない。
+ */
 export function getInputActor<T>(
   session: BattleSession<T>,
 ): CharacterId | null {
@@ -173,6 +212,13 @@ export function getInputActor<T>(
     null
   );
 }
+/**
+ * 現在の対象適格性を満たす参加者IDを参加者順で返す。
+ *
+ * @param session 更新または照会対象の戦闘セッション。入力オブジェクトは変更しない。
+ * @param actorId 行動者の参加者ID。
+ * @param skillId 使用または照会するスキルID。
+ */
 export function getSkillTargets<T>(
   session: BattleSession<T>,
   actorId: ParticipantId,
@@ -181,6 +227,12 @@ export function getSkillTargets<T>(
   const engine = new Engine(session.content, session.state, session.log);
   return engine.targetIds(engine.participant(actorId), engine.skill(skillId));
 }
+/**
+ * 固定行動列と現在状態から敵の予告を生成する。詠唱中の予約対象は変更しない。
+ *
+ * @param session 更新または照会対象の戦闘セッション。入力オブジェクトは変更しない。
+ * @param enemyId 予告対象の敵ID。省略時はこの戦闘の敵。
+ */
 export function getEnemyForecast<T>(
   session: BattleSession<T>,
   enemyId: EnemyId = session.setup.enemyId,
@@ -188,6 +240,12 @@ export function getEnemyForecast<T>(
   const engine = new Engine(session.content, session.state, session.log);
   return engine.forecast(engine.participant(enemyId));
 }
+/**
+ * 勝利以外なら開始時のTU0状態とログへ戻し、最初の入力まで再実行する。
+ *
+ * @param session 更新または照会対象の戦闘セッション。入力オブジェクトは変更しない。
+ * @returns 再初期化したセッション。勝利済みなら例外。
+ */
 export function retryBattle<T>(session: BattleSession<T>): BattleSession<T> {
   if (session.state.result === 'victory')
     throw new Error('Cannot retry a victorious battle');
@@ -199,6 +257,11 @@ export function retryBattle<T>(session: BattleSession<T>): BattleSession<T> {
   engine.advance();
   return next;
 }
+/**
+ * 進行中の戦闘を逃走で終了し、全予定を破棄する。確定済みの勝敗を優先する。
+ *
+ * @param session 更新または照会対象の戦闘セッション。入力オブジェクトは変更しない。
+ */
 export function escapeBattle<T>(session: BattleSession<T>): BattleSession<T> {
   if (session.state.result !== 'ongoing') return structuredClone(session);
   const next = structuredClone(session);
@@ -220,7 +283,11 @@ export function escapeBattle<T>(session: BattleSession<T>): BattleSession<T> {
   );
   return next;
 }
-/** Returns a pure reward candidate; the persistence layer must commit it atomically once. */
+/**
+ * 勝敗・勝利報酬候補・戦闘前進行をコピーして返す。報酬保存は呼び出し元で一度だけ行う。
+ *
+ * @param session 更新または照会対象の戦闘セッション。入力オブジェクトは変更しない。
+ */
 export function getBattleOutcome<T>(
   session: BattleSession<T>,
 ): BattleOutcome<T> {
@@ -235,6 +302,11 @@ export function getBattleOutcome<T>(
     preBattle: structuredClone(session.preBattle),
   };
 }
+/**
+ * 戦闘状態とログの独立したコピーを返す。デバッグ表示やJSON記録に使用する。
+ *
+ * @param session 更新または照会対象の戦闘セッション。入力オブジェクトは変更しない。
+ */
 export function getDebugSnapshot<T>(session: BattleSession<T>) {
   return structuredClone({ state: session.state, log: session.log });
 }

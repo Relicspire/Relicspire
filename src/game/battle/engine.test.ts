@@ -22,8 +22,24 @@ import { actorSnapshot, damageAmount, effectiveStats } from './calculations';
 import { Engine } from './engine';
 import { attackPayload, fixture, skill } from './fixtures.test-support';
 import type { BattleSession, PlayerCommand } from './types';
+/**
+ * テストセッションの固定敵枠を取得する。
+ *
+ * @param s テスト用の戦闘セッション。
+ */
 const enemy = (s: BattleSession) => s.state.participants[3];
+/**
+ * テストセッションの味方1を取得する。
+ *
+ * @param s テスト用の戦闘セッション。
+ */
 const actor = (s: BattleSession) => s.state.participants[0];
+/**
+ * 味方1が入力する属性選択なしのテストコマンドを生成する。
+ *
+ * @param skillId 使用または照会するスキルID。
+ * @param selectedTargetId 予約する単体対象ID。自身・全体の場合はnull。
+ */
 const command = (
   skillId: PlayerCommand['skillId'] = 'basic-attack',
   selectedTargetId: PlayerCommand['selectedTargetId'] = 'boss-01',
@@ -33,18 +49,41 @@ const command = (
   selectedTargetId,
   chosenElement: null,
 });
+/**
+ * 行動者IDを含まないテスト用の予約コマンドを生成する。
+ *
+ * @param skillId 使用または照会するスキルID。
+ * @param selectedTargetId 予約する単体対象ID。自身・全体の場合はnull。
+ */
 const reservation = (
   skillId: CommandReservation['skillId'],
   selectedTargetId: CommandReservation['selectedTargetId'] = null,
 ): CommandReservation => ({ skillId, selectedTargetId, chosenElement: null });
+/**
+ * テストでコマンドを確定し、成功した更新セッションを取得する。不正入力はテストを失敗させる。
+ *
+ * @param s テスト用の戦闘セッション。
+ * @param c テストで確定するプレイヤーコマンド。
+ */
 function submit(s: BattleSession, c: PlayerCommand): BattleSession {
   const result = submitCommand(s, c);
   if (!result.ok) throw new Error(result.reason);
   return result.session;
 }
+/**
+ * テスト内で境界状態を操作する内部エンジンを生成する。
+ *
+ * @param s テスト用の戦闘セッション。
+ */
 function engine(s: BattleSession) {
   return new Engine(s.content, s.state, s.log);
 }
+/**
+ * 指定TUで味方1が到達する境界テスト状態へ組み替え、予定を同期する。
+ *
+ * @param s テスト用の戦闘セッション。
+ * @param now テスト開始の論理時刻。既定は100 TU。
+ */
 function prepare(s: BattleSession, now = 100) {
   s.state.now = now;
   for (const p of s.state.participants)
@@ -54,6 +93,15 @@ function prepare(s: BattleSession, now = 100) {
   engine(s).syncTimeline();
   return s;
 }
+/**
+ * 付与順と期限を持つ状態をテスト参加者へ直接設定する。
+ *
+ * @param s テスト用の戦闘セッション。
+ * @param target 効果の対象。
+ * @param spec 付与する状態効果の性能。
+ * @param expires 状態の期限を示す絶対TU。
+ * @param sourceId 付与者として記録する参加者ID。
+ */
 function status(
   s: BattleSession,
   target: BattleParticipant,
@@ -78,6 +126,12 @@ function status(
   target.statuses.push(item);
   return item;
 }
+/**
+ * テスト用攻撃Effectを指定の対象束縛で生成する。
+ *
+ * @param target Effectの対象束縛。既定はselected。
+ * @param overrides 既定のテストデータから上書きする項目。
+ */
 function atk(
   target: Effect['target'] = 'selected',
   overrides: Partial<ReturnType<typeof attackPayload>> = {},
@@ -588,7 +642,7 @@ describe('casting, break and time manipulation', () => {
     );
     const e = engine(s);
     const original = e.attack.bind(e);
-    // Generic boundary fixture: inject time manipulation while the action is resolving.
+    // 汎用的な境界検証として、行動の処理中に時間操作を差し込む。
     vi.spyOn(e, 'attack').mockImplementation((...args) => {
       original(...args);
       e.utility(enemy(s), actor(s), {
@@ -1388,6 +1442,11 @@ describe('unit boundaries and complete deterministic sample battle', () => {
       enemyStats: { maxHp: 400 },
       enemy: { maxBreakGauge: 60 },
     });
+    /**
+     * 同じ入力方針で合成戦闘を最後まで実行し、自動・段階進行の一致を検証する。
+     *
+     * @param stepped trueなら処理単位ごと、falseなら自動進行でテスト戦闘を実行する。
+     */
     const play = (stepped: boolean) => {
       let s = structuredClone(source);
       let commands = 0;

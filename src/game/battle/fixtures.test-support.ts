@@ -1,4 +1,4 @@
-/** Test-only synthetic catalogs: official content is supplied by later content tasks. */
+/** テスト専用の合成カタログ。正式コンテンツは後続タスクで用意する。 */
 import {
   JOB_IDS,
   type AttackPayload,
@@ -13,6 +13,7 @@ import {
 } from '../data/model';
 import type { BattleSession, BattleSetup } from './types';
 import { createBattle } from './index';
+/** 戦闘テスト用の共通基礎能力。正式コンテンツの値ではない。 */
 export const STATS: Stats = {
   maxHp: 300,
   atk: 40,
@@ -21,6 +22,11 @@ export const STATS: Stats = {
   mdef: 10,
   spd: 100,
 };
+/**
+ * テスト用の有効な1ヒット攻撃性能を生成する。
+ *
+ * @param overrides 既定のテストデータから上書きする項目。
+ */
 export function attackPayload(
   overrides: Partial<AttackPayload> = {},
 ): AttackPayload {
@@ -35,6 +41,12 @@ export function attackPayload(
     ...overrides,
   };
 }
+/**
+ * テスト用スキルを生成する。共有CDはランク1・2、敵スキルはCD0とする。
+ *
+ * @param id 生成するテストスキルID。
+ * @param overrides 既定のテストデータから上書きする項目。
+ */
 export function skill(
   id: SkillId,
   overrides: Partial<SkillDefinition> = {},
@@ -56,6 +68,11 @@ export function skill(
     ...overrides,
   };
 }
+/**
+ * 合成コンテンツと確定編成からテスト用戦闘を開始する。正式コンテンツの代用にはしない。
+ *
+ * @param options ジョブ3枠・スキル・敵性能・味方基礎能力などの上書き設定。
+ */
 export function fixture(
   options: {
     jobs?: [JobId, JobId, JobId];
@@ -67,6 +84,11 @@ export function fixture(
 ): BattleSession {
   const jobs = options.jobs ?? ['knight', 'wizard', 'cleric'];
   const definitions: GameContent['jobs'] = JOB_IDS.map((id) => {
+    /**
+     * テスト用ジョブの3ノード直列ルートを生成する。
+     *
+     * @param r 生成するテスト用スキルルート（aまたはb）。
+     */
     const route = (r: 'a' | 'b'): SkillNode[] =>
       ([1, 2, 3] as const).map((rank) => {
         const nodeId: SkillNodeId = `${id}-${r}${rank}`;
