@@ -131,8 +131,8 @@ function saved(c = data()): FormationState {
   return value(createPreset(c, initial(c), metadata, context));
 }
 
-describe('formation and independent skill budgets', () => {
-  it('creates initial A1+A2 for cost3 and replaces only commands, not flags', () => {
+describe('編成と各人物の独立したスキル予算', () => {
+  it('初期習得A1・A2の費用を3とし、習得を保持したままコマンドを上位置換する', () => {
     const c = data();
     const s = initial(c);
     expect(validateFormation(c, s.party, context)).toEqual([]);
@@ -144,7 +144,7 @@ describe('formation and independent skill budgets', () => {
     expect(s.party[0].learnedSkills).toEqual(['knight-a1', 'knight-a2']);
     expect(getRemainingSkillPoints(c, s.party[0], context)).toBe(0);
   });
-  it('derives 3..12 from unique boss01..09 and derives inventory from guardians', () => {
+  it('ボス01〜09の討伐から予算3〜12を、守護者の討伐から所持品を導出する', () => {
     const c = data();
     expect(getSkillPointLimit(context)).toBe(3);
     expect(getSkillPointLimit(full)).toBe(12);
@@ -162,7 +162,7 @@ describe('formation and independent skill budgets', () => {
       ),
     ).toBe(1);
   });
-  it('allows same-job triples and clears only the changed person skills', () => {
+  it('同職3人を許可し、ジョブを変更した人物の習得だけを解除する', () => {
     const c = data();
     const s = initial(c);
     const one = value(changeJob(c, s, 'party-2', 'knight', context));
@@ -178,7 +178,7 @@ describe('formation and independent skill budgets', () => {
     expect(s).toEqual(initial(c));
     expect(value(changeJob(c, s, 'party-1', 'knight', context))).toEqual(s);
   });
-  it('rejects missing prerequisites, duplicates, wrong job and budget borrowing', () => {
+  it('前提不足・重複習得・他職スキル・他人の予算使用を拒否する', () => {
     const c = data();
     const s = value(resetSkills(c, initial(c), 'party-1', context));
     expect(learnSkill(c, s, 'party-1', 'knight-a3', context).ok).toBe(false);
@@ -192,7 +192,7 @@ describe('formation and independent skill budgets', () => {
       false,
     );
   });
-  it('purchases full routes at12, shows2+3, refunds descendants in one update', () => {
+  it('予算12で両ルートを習得し、ランク2・3を表示して依存ノードを一括返却する', () => {
     const c = data();
     let s = initial(c);
     for (const id of [
@@ -223,7 +223,7 @@ describe('formation and independent skill budgets', () => {
     ]);
     expect(getRemainingSkillPoints(c, next.party[0], full)).toBe(6);
   });
-  it('refuses job, skill, equipment, transfer and recall edits during battle', () => {
+  it('戦闘中のジョブ・スキル・装備変更・受け渡し・プリセット呼出を拒否する', () => {
     const c = data();
     const s = saved(c);
     const ctx = { ...context, inBattle: true };
@@ -246,15 +246,15 @@ describe('formation and independent skill budgets', () => {
     expect(s).toEqual(before);
   });
   it.each([null, [], [{ id: 'party-1' }], [null, null, null]])(
-    'rejects malformed JSON without throwing',
+    '不正なJSONを例外を投げずに検証エラーとして返す',
     (raw) => {
       expect(validateFormation(data(), raw, context).length).toBeGreaterThan(0);
     },
   );
 });
 
-describe('six unrestricted equipment slots and atomic transfers', () => {
-  it('concentrates three armors without changing inventory', () => {
+describe('6枠の自由装備と一括で確定する受け渡し', () => {
+  it('所持数を変えずに同じ防具3個を1人へ集中装備できる', () => {
     const c = data();
     const s = initial(c);
     const party = structuredClone(s.party);
@@ -276,7 +276,7 @@ describe('six unrestricted equipment slots and atomic transfers', () => {
     party[1].equipment[0] = 'starter-armor';
     expect(replaceParty(c, s, party, context).ok).toBe(false);
   });
-  it('transfers an allocated unique relic in one update and rejects duplicate/unowned use', () => {
+  it('装備中の遺物を一括で移動し、重複使用と未所持品を拒否する', () => {
     const c = data();
     const ctx = {
       ...context,
@@ -324,7 +324,7 @@ describe('six unrestricted equipment slots and atomic transfers', () => {
       ).ok,
     ).toBe(false);
   });
-  it('swaps occupied slots and rejects fractional/out of range indices', () => {
+  it('装備済みの枠を交換し、小数と範囲外の枠番号を拒否する', () => {
     const c = data();
     const s = initial(c);
     const next = value(
@@ -346,15 +346,15 @@ describe('six unrestricted equipment slots and atomic transfers', () => {
   });
 });
 
-describe('preset management and explicit repair', () => {
-  it('normalizes Unicode and counts emoji as one code point', () => {
+describe('プリセット管理と明示的な修復', () => {
+  it('Unicodeを正規化し、絵文字を1コードポイントとして数える', () => {
     expect(value(normalizePresetName('  e\u0301  '))).toBe('é');
     expect(normalizePresetName('😀'.repeat(24)).ok).toBe(true);
     expect(normalizePresetName('😀'.repeat(25)).ok).toBe(false);
     for (const n of ['', '  ', 'a\nb', '\ta', 'a\u0000'])
       expect(normalizePresetName(n).ok).toBe(false);
   });
-  it('creates, renames, overwrites, recalls and deletes while preserving originals', () => {
+  it('入力状態を変更せずにプリセットを作成・改名・上書き・呼出・削除する', () => {
     const c = data();
     const s = saved(c);
     const renamed = value(renamePreset(s, 'preset-one', ' 新名称 ', 2000));
@@ -388,7 +388,7 @@ describe('preset management and explicit repair', () => {
     );
     expect(s.presets[0]!.name).toBe('編成');
   });
-  it('permits duplicate names, rejects duplicate IDs and the21st entry, sorts deterministic ties', () => {
+  it('同名を許可し、重複IDと21件目を拒否して同時刻をID順に並べる', () => {
     const c = data();
     let s = initial(c);
     for (let i = 0; i < 20; i++)
@@ -417,7 +417,7 @@ describe('preset management and explicit repair', () => {
     expect(sortPresets(s.presets)).toEqual(s.presets);
     expect(createPreset(c, saved(c), metadata, context).ok).toBe(false);
   });
-  it('retains invalid old presets and repairs missing equipment only on explicit recall', () => {
+  it('不整合の旧プリセットを保持し、明示的な修復呼出時だけ削除済み装備を外す', () => {
     const c = data();
     const s = saved(c);
     s.presets[0]!.party[0].equipment[0] = 'relic-01-01';
@@ -433,7 +433,7 @@ describe('preset management and explicit repair', () => {
     expect(repaired.party[0].equipment[0]).toBeNull();
     expect(repaired.presets).toEqual(before.presets);
   });
-  it('keeps equipment up to ownership in person then slot order', () => {
+  it('人物順・枠順に所持数まで装備を保持する', () => {
     const c = data();
     const s = saved(c);
     s.presets[0]!.party.forEach((p) => {
@@ -447,7 +447,7 @@ describe('preset management and explicit repair', () => {
     ]);
     expect(result.issues).toEqual([]);
   });
-  it('removes unknown/foreign skills and all nodes that lose prerequisites', () => {
+  it('未知・他職のスキルと前提を失った全ノードを除去する', () => {
     const c = data();
     const s = saved(c);
     s.presets[0]!.party[0].learnedSkills = [
@@ -460,7 +460,7 @@ describe('preset management and explicit repair', () => {
     expect(result.changes).toHaveLength(3);
     expect(s.presets[0]!.party[0].learnedSkills).toHaveLength(3);
   });
-  it('does not auto-repair unknown jobs or point overflow', () => {
+  it('未知のジョブとポイント超過を自動修復しない', () => {
     const c = data();
     const s = saved(c);
     s.presets[0]!.party[0].learnedSkills.push('knight-a3');
@@ -477,7 +477,7 @@ describe('preset management and explicit repair', () => {
       ).issues.some((i) => i.code === 'job'),
     ).toBe(true);
   });
-  it('applies explicit migration maps before normal recall and preserves saved source', () => {
+  it('明示的なID移行表を通常呼出前に適用し、保存済み原本を保持する', () => {
     const c = data();
     const s = saved(c);
     s.presets[0]!.party[0].equipment[0] = 'removed-item' as never;
@@ -489,7 +489,7 @@ describe('preset management and explicit repair', () => {
     expect(next.party[0].equipment[0]).toBe('starter-sword');
     expect(next.presets[0]!.party[0].equipment[0]).toBe('removed-item');
   });
-  it('rejects invalid timestamps, metadata, corrupted shapes and unknown IDs', () => {
+  it('不正な日時・管理情報・破損した構造・未知IDを拒否する', () => {
     const c = data();
     const s = saved(c);
     expect(renamePreset(s, 'preset-one', 'test', 999).ok).toBe(false);
@@ -506,8 +506,8 @@ describe('preset management and explicit repair', () => {
   });
 });
 
-describe('shared validation at battle start', () => {
-  it('starts an initial valid party with full HP and equipment-derived stats', () => {
+describe('戦闘開始時の共通編成検証', () => {
+  it('有効な初期編成を全快HPと装備反映済みの能力値で開始する', () => {
     const c = data();
     const s = initial(c);
     const battle = createBattle(c, {
@@ -521,7 +521,7 @@ describe('shared validation at battle start', () => {
       stats: { maxHp: 350, atk: 50, mag: 50, def: 15, mdef: 15, spd: 105 },
     });
   });
-  it('rejects over-budget, excess inventory and unowned relic before creating a battle', () => {
+  it('戦闘生成前に予算超過・所持数超過・未所持の遺物を拒否する', () => {
     const c = data();
     const s = initial(c);
     s.party[0].learnedSkills.push('knight-a3');
