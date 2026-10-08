@@ -35,6 +35,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       pages: write
       id-token: write
     concurrency:
@@ -44,6 +45,26 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Check GitHub Pages status
+        id: pages_status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.repos.getPages({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+              core.setOutput('enabled', 'true');
+            } catch (error) {
+              if (error.status === 404) {
+                core.warning('GitHub Pages is not enabled for this repository. Skipping deploy job.');
+                core.setOutput('enabled', 'false');
+              } else {
+                throw error;
+              }
+            }
       - name: Deploy to GitHub Pages
         id: deployment
+        if: steps.pages_status.outputs.enabled == 'true'
         uses: actions/deploy-pages@v4
