@@ -254,44 +254,48 @@ const schema = object({
     ]),
   ),
   enemies: array(
-    object({
-      id: enemyId,
-      stats: object(statsFields),
-      maxBreakGauge: integer(1),
-      weakness: element,
-      resistance: element,
-      breakResistance: integer(0, 10000),
-      knockbackResistance: integer(0, 10000),
-      cancelImmune: bool,
-      timeStopImmune: bool,
-      phases: array(
-        object({
-          id: id(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
-          hpThreshold: integer(0, 10000),
-          actions: array(
-            object({
-              skillId,
-              selection: choice(
-                'lowest-hp',
-                'highest-atk',
-                'highest-mag',
-                'highest-spd',
-                'all',
-                'self',
-              ),
-            }),
-            1,
-          ),
+    object(
+      {
+        id: enemyId,
+        stats: object(statsFields),
+        maxBreakGauge: integer(1),
+        weakness: element,
+        resistance: element,
+        immuneElements: array(element),
+        breakResistance: integer(0, 10000),
+        knockbackResistance: integer(0, 10000),
+        cancelImmune: bool,
+        timeStopImmune: bool,
+        phases: array(
+          object({
+            id: id(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+            hpThreshold: integer(0, 10000),
+            actions: array(
+              object({
+                skillId,
+                selection: choice(
+                  'lowest-hp',
+                  'highest-atk',
+                  'highest-mag',
+                  'highest-spd',
+                  'all',
+                  'self',
+                ),
+              }),
+              1,
+            ),
+          }),
+          1,
+        ),
+        reward: object({
+          skillPointsPerCharacter: integer(),
+          equipment: array(object({ id: equipmentId, quantity: integer(1) })),
+          unlockFloorId: union([floorId, choice(null)]),
+          finalClear: bool,
         }),
-        1,
-      ),
-      reward: object({
-        skillPointsPerCharacter: integer(),
-        equipment: array(object({ id: equipmentId, quantity: integer(1) })),
-        unlockFloorId: union([floorId, choice(null)]),
-        finalClear: bool,
-      }),
-    }),
+      },
+      ['immuneElements'],
+    ),
   ),
   floors: array(
     object({
@@ -390,6 +394,42 @@ export function validateGameContent(input: unknown): DataIssue[] {
   data.skills.forEach((s) => {
     const path = s.id;
     if (
+      s.id === 'wait' &&
+      (s.target !== 'self' ||
+        s.castTime !== 0 ||
+        s.delay !== 20 ||
+        s.cooldown !== 0 ||
+        s.cooldownId !== 'wait' ||
+        s.elementChoices.length !== 0 ||
+        s.effects.length !== 0)
+    )
+      fail(issues, path, 'Wait must use the fixed free command definition');
+    if (s.id === 'basic-attack') {
+      const effect = s.effects[0];
+      if (
+        s.target !== 'enemy-single' ||
+        s.castTime !== 0 ||
+        s.delay !== 100 ||
+        s.cooldown !== 0 ||
+        s.cooldownId !== 'basic-attack' ||
+        s.elementChoices.length !== 0 ||
+        s.effects.length !== 1 ||
+        effect?.kind !== 'attack' ||
+        effect.target !== 'selected' ||
+        effect.damageType !== 'physical' ||
+        effect.element !== 'none' ||
+        effect.power !== 100 ||
+        effect.breakDamage !== 5 ||
+        effect.attached.length !== 0
+      )
+        fail(
+          issues,
+          path,
+          'Basic attack must use the fixed free command definition',
+        );
+    }
+
+    if (
       s.effects.filter((e) => e.kind === 'attack' || e.kind === 'trap').length >
       1
     )
@@ -440,6 +480,12 @@ export function validateGameContent(input: unknown): DataIssue[] {
     }
   });
   data.enemies.forEach((e) => {
+    const attributes = [e.weakness, e.resistance, ...(e.immuneElements ?? [])];
+    if (
+      attributes.includes('none') ||
+      new Set(attributes).size !== attributes.length
+    )
+      fail(issues, e.id, 'Element categories must be distinct and non-neutral');
     collect(e.phases, `${e.id}.phases`);
     e.phases.forEach((p, i) => {
       if (
@@ -456,6 +502,10 @@ export function validateGameContent(input: unknown): DataIssue[] {
         if (!a.skillId.startsWith(`${e.id}-s`))
           fail(issues, e.id, 'Enemy action belongs to another owner');
         const s = data.skills.find((s) => s.id === a.skillId);
+        if (s && s.cooldown !== 0)
+          fail(issues, e.id, 'Current enemy skills must have zero cooldown');
+        if (s && s.elementChoices.length !== 0)
+          fail(issues, e.id, 'Enemy skill elements must be fixed');
         if (
           s &&
           ((a.selection === 'self' && s.target !== 'self') ||

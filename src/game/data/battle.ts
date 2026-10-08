@@ -40,7 +40,8 @@ export type ActionState =
   | { kind: 'acting'; pendingKnockback: TU }
   | { kind: 'casting'; cast: Cast }
   | { kind: 'broken'; break: BreakState }
-  | { kind: 'dead' };
+  | { kind: 'dead' }
+  | { kind: 'finished' };
 export interface StatusEffect {
   id: number;
   sourceId: ParticipantId;
@@ -62,6 +63,7 @@ export interface Trap {
 }
 export interface ParticipantBase {
   id: ParticipantId;
+  /** Baseline plus equipment; effectiveStats applies modifiers before final clamps. maxHp is already clamped. */
   stats: Stats;
   hp: number;
   action: ActionState;

@@ -198,6 +198,7 @@ export interface EnemyDefinition {
   maxBreakGauge: number;
   weakness: Element;
   resistance: Element;
+  immuneElements?: Element[];
   breakResistance: BasisPoints;
   knockbackResistance: BasisPoints;
   cancelImmune: boolean;

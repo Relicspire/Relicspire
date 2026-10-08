@@ -183,3 +183,16 @@ describe('content boundary', () => {
     expect(validateGameContent(input).length).toBeGreaterThan(0);
   });
 });
+
+describe('battle execution data contracts', () => {
+  it('rejects attempts to redefine universal commands', () => {
+    const data = fixture();
+    data.skills.push({ ...data.skills[0]!, id: 'wait' });
+    expect(messages(data)).toContain('fixed free command');
+    data.skills[data.skills.length - 1] = {
+      ...data.skills[0]!,
+      id: 'basic-attack',
+    };
+    expect(messages(data)).toContain('fixed free command');
+  });
+});
