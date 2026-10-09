@@ -1,0 +1,387 @@
+import { createStore } from 'zustand/vanilla';
+import { persist, type PersistStorage } from 'zustand/middleware';
+import type { GameRelease } from '../game/data/release-model';
+import { validateFormation, type FormationState } from '../game/party';
+import {
+  createBattle,
+  getBattleOutcome,
+  type BattleSession,
+} from '../game/battle';
+import {
+  createVictoryCandidate,
+  validateEncounter,
+  type Encounter,
+  type Progression,
+} from '../game/progression';
+import {
+  SaveConflict,
+  type SaveEnvelope,
+  type SaveRepository,
+  type SaveSnapshot,
+} from '../storage/save';
+import {
+  initialSave,
+  inspectSave,
+  migrateSave,
+  SCHEMA_VERSION,
+  type SaveData,
+} from './save-model';
+
+export type SaveStatus =
+  'loading' | 'empty' | 'ready' | 'saving' | 'error' | 'recovery' | 'readonly';
+/** 唯一の書込経路。各Storeには保存成功後の値だけを配布する。 */
+export function createGameState(
+  release: GameRelease,
+  repository: SaveRepository,
+  owns: () => boolean,
+) {
+  const progression = createStore<{ value: Progression | null }>(() => ({
+    value: null,
+  }));
+  const formation = createStore<{ value: FormationState | null }>(() => ({
+    value: null,
+  }));
+  const exploration = createStore<{ encounter: Encounter | null }>(() => ({
+    encounter: null,
+  }));
+  const battle = createStore<{
+    session: BattleSession<SaveData> | null;
+    before: SaveData | null;
+  }>(() => ({ session: null, before: null }));
+  const status = createStore<{
+    value: SaveStatus;
+    message: string;
+    changes: string[];
+  }>(() => ({ value: 'loading', message: '', changes: [] }));
+  let raw: unknown;
+  let committed: SaveData | null = null;
+  let pending: SaveEnvelope<SaveData> | null = null;
+  let afterSave: (() => void) | null = null;
+  let recovery: SaveData | null = null;
+  let future = false;
+  const publish = (data: SaveData) => {
+    committed = structuredClone(data);
+    progression.setState({ value: structuredClone(data.progression) });
+    formation.setState({
+      value: {
+        party: structuredClone(data.party),
+        presets: structuredClone(data.presets),
+      },
+    });
+  };
+  let writing: Promise<void> | null = null;
+  const storage: PersistStorage<{ data: SaveData | null }> = {
+    getItem: async () => {
+      return { state: { data: committed }, version: SCHEMA_VERSION };
+    },
+    setItem: () => {
+      if (!pending) throw new Error('保存候補がありません');
+      writing = repository.write(raw, pending);
+      return writing;
+    },
+    removeItem: () => {
+      throw new Error('セーブの削除は禁止されています');
+    },
+  };
+  const persisted = createStore(
+    persist<{ data: SaveData | null }>(() => ({ data: null }), {
+      name: 'relicspire-save',
+      version: SCHEMA_VERSION,
+      storage,
+      skipHydration: true,
+      migrate: (state, version) =>
+        migrateSave(state, version) as { data: SaveData | null },
+    }),
+  );
+  // persistが開始したIndexedDB書込を待ってから他のStoreへ確定値を配布する。
+  async function flush() {
+    if (!pending) throw new Error('再試行する候補がありません');
+    status.setState({ value: 'saving', message: '保存中…' });
+    try {
+      persisted.setState({ data: structuredClone(pending.current.data) });
+      await writing;
+      raw = structuredClone(pending);
+      publish(pending.current.data);
+      pending = null;
+      await persisted.persist.rehydrate();
+      status.setState({ value: 'ready', message: '', changes: [] });
+      const next = afterSave;
+      afterSave = null;
+      next?.();
+    } catch (error) {
+      await persisted.persist.rehydrate();
+      const conflict = error instanceof SaveConflict || !owns();
+      status.setState({
+        value: conflict ? 'readonly' : 'error',
+        message: error instanceof Error ? error.message : '保存に失敗しました',
+      });
+      if (conflict) battle.setState({ session: null, before: null });
+      throw error;
+    }
+  }
+  async function save(
+    data: SaveData,
+    next: (() => void) | null = null,
+    newGame = false,
+  ) {
+    if (!owns()) {
+      battle.setState({ session: null, before: null });
+      status.setState({ value: 'readonly', message: '所有権を失いました' });
+      throw new SaveConflict('所有権を失いました');
+    }
+    if (
+      !owns() ||
+      !['ready', 'empty', 'recovery'].includes(status.getState().value) ||
+      future
+    )
+      throw new Error('現在は変更できません');
+    const current = (raw as SaveEnvelope<SaveData> | undefined)?.current;
+    const revision =
+      !newGame && Number.isSafeInteger(current?.revision)
+        ? current!.revision + 1
+        : 1;
+    const snapshot: SaveSnapshot<SaveData> = {
+      saveId:
+        newGame || !current?.saveId ? crypto.randomUUID() : current.saveId,
+      revision,
+      schemaVersion: SCHEMA_VERSION,
+      contentVersion: release.contentVersion,
+      updatedAt: Date.now(),
+      data: structuredClone(data),
+    };
+    const inspection = inspectSave(release, snapshot);
+    if (!inspection.candidate || inspection.changes.length)
+      throw new Error(inspection.error ?? '候補の修復が必要です');
+    pending = { current: snapshot, previous: current ?? null };
+    afterSave = next;
+    await flush();
+  }
+  async function load() {
+    pending = null;
+    afterSave = null;
+    committed = null;
+    recovery = null;
+    future = false;
+    await persisted.persist.rehydrate();
+    battle.setState({ session: null, before: null });
+    exploration.setState({ encounter: null });
+    progression.setState({ value: null });
+    formation.setState({ value: null });
+    status.setState({ value: 'loading', message: '', changes: [] });
+    try {
+      raw = await repository.read();
+      if (raw === undefined) {
+        status.setState({
+          value: owns() ? 'empty' : 'readonly',
+          message: owns()
+            ? '新しく冒険を始められます'
+            : '別のタブでプレイ中、またはWeb Locksが利用できません',
+        });
+        return;
+      }
+      const inspection = inspectSave(
+        release,
+        (raw as SaveEnvelope<SaveData> | null)?.current,
+      );
+      future = inspection.future;
+      recovery = inspection.candidate;
+      if (inspection.candidate && !inspection.changes.length) {
+        publish(inspection.candidate);
+        await persisted.persist.rehydrate();
+      }
+      status.setState({
+        value: !owns()
+          ? 'readonly'
+          : inspection.error || inspection.changes.length
+            ? 'recovery'
+            : 'ready',
+        message: inspection.error ?? '',
+        changes: inspection.changes,
+      });
+    } catch (error) {
+      status.setState({ value: 'error', message: String(error) });
+    }
+  }
+  return {
+    progression,
+    formation,
+    exploration,
+    battle,
+    status,
+    persisted,
+    load,
+    exportRaw: () => JSON.stringify(raw ?? null, null, 2),
+    async newGame() {
+      await save(
+        initialSave(release, committed?.settings),
+        () => {
+          battle.setState({ session: null, before: null });
+        },
+        true,
+      );
+    },
+    async repair() {
+      if (!recovery) throw new Error('修復候補がありません');
+      await save(recovery);
+    },
+    previousInspection: () =>
+      inspectSave(
+        release,
+        (raw as SaveEnvelope<SaveData> | undefined)?.previous,
+      ),
+    async restorePrevious() {
+      const previous = inspectSave(
+        release,
+        (raw as SaveEnvelope<SaveData> | undefined)?.previous,
+      );
+      if (future || previous.future || !previous.candidate)
+        throw new Error('この保存世代は復元できません');
+      await save(previous.candidate);
+    },
+    retry: flush,
+    async cancel() {
+      if (status.getState().value !== 'error' || !pending)
+        throw new Error('取消できません');
+      if (JSON.stringify(await repository.read()) === JSON.stringify(pending)) {
+        await flush();
+        return;
+      }
+      if (
+        JSON.stringify(await repository.read()) !== JSON.stringify(raw) ||
+        !owns()
+      ) {
+        battle.setState({ session: null, before: null });
+        status.setState({
+          value: 'readonly',
+          message: '保存が更新されています',
+        });
+        throw new SaveConflict('保存が更新されています');
+      }
+      pending = null;
+      afterSave = null;
+      battle.setState({ session: null, before: null });
+      status.setState({ value: committed ? 'ready' : 'empty', message: '' });
+    },
+    async update(data: SaveData) {
+      if (
+        battle.getState().session &&
+        (JSON.stringify(data.party) !== JSON.stringify(committed?.party) ||
+          JSON.stringify(data.progression) !==
+            JSON.stringify(committed?.progression) ||
+          JSON.stringify(data.presets) !== JSON.stringify(committed?.presets))
+      )
+        throw new Error('戦闘中は設定だけ変更できます');
+      await save(data);
+    },
+    async startBattle(encounter: Encounter) {
+      if (!committed || battle.getState().session)
+        throw new Error('戦闘を開始できません');
+      const data = structuredClone(committed);
+      const issues = [
+        ...validateEncounter(release, data.progression, encounter),
+        ...validateFormation(release.content, data.party, {
+          defeatedEnemyIds: data.progression.defeatedEnemyIds,
+          inBattle: false,
+        }),
+      ];
+      if (issues.length)
+        throw new Error(issues.map((i) => i.message).join('\n'));
+      const session = createBattle(
+        release.content,
+        {
+          party: data.party,
+          enemyId: encounter.enemyId,
+          campaign: release.campaign,
+          context: {
+            defeatedEnemyIds: data.progression.defeatedEnemyIds,
+            inBattle: false,
+          },
+        },
+        data,
+      );
+      await save(data, () => {
+        battle.setState({ before: data, session });
+        exploration.setState({ encounter: structuredClone(encounter) });
+      });
+    },
+    async leaveBattle() {
+      if (status.getState().value !== 'ready' || !owns())
+        throw new Error('現在は戦闘を終了できません');
+      const { session, before } = battle.getState();
+      if (
+        !session ||
+        !before ||
+        !committed ||
+        getBattleOutcome(session).result === 'victory'
+      )
+        throw new Error('勝利の保存を先に完了してください');
+      if (JSON.stringify(await repository.read()) !== JSON.stringify(raw)) {
+        battle.setState({ session: null, before: null });
+        status.setState({ value: 'readonly' });
+        throw new SaveConflict('保存が更新されています');
+      }
+      publish({
+        ...committed,
+        party: before.party,
+        progression: before.progression,
+      });
+      battle.setState({ session: null, before: null });
+      exploration.setState({ encounter: null });
+    },
+    async retryBattle() {
+      const encounter = exploration.getState().encounter;
+      if (!encounter) throw new Error('遭遇情報がありません');
+      await this.leaveBattle();
+      if (!committed) throw new Error('開始前状態がありません');
+      const data = structuredClone(committed);
+      battle.setState({
+        before: data,
+        session: createBattle(
+          release.content,
+          {
+            party: data.party,
+            enemyId: encounter.enemyId,
+            campaign: release.campaign,
+            context: {
+              defeatedEnemyIds: data.progression.defeatedEnemyIds,
+              inBattle: false,
+            },
+          },
+          data,
+        ),
+      });
+      exploration.setState({ encounter: structuredClone(encounter) });
+    },
+    async victory() {
+      const { session, before } = battle.getState();
+      const encounter = exploration.getState().encounter;
+      if (
+        !session ||
+        getBattleOutcome(session).result !== 'victory' ||
+        !before ||
+        !encounter ||
+        !committed
+      )
+        throw new Error('勝利が成立していません');
+      const candidate = createVictoryCandidate(
+        release,
+        before.progression,
+        encounter,
+        encounter.enemyId,
+      );
+      if (!candidate.ok) throw new Error('勝利候補が不正です');
+      await save(
+        {
+          ...committed,
+          party: before.party,
+          progression: candidate.value.progression,
+        },
+        () => {
+          battle.setState({ session: null, before: null });
+          exploration.setState({ encounter: null });
+        },
+      );
+    },
+  };
+}
+export type GameState = ReturnType<typeof createGameState>;

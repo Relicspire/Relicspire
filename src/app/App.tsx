@@ -1,4 +1,13 @@
-export function App() {
+import type { GameState } from '../state/game';
+import { SavePanel } from './SavePanel';
+
+export function App({
+  game,
+  recheck,
+}: {
+  game?: GameState;
+  recheck?: () => Promise<void>;
+}) {
   return (
     <main className="flex min-h-dvh items-center justify-center bg-slate-950 px-6 text-slate-100">
       <div className="max-w-xl text-center">
@@ -9,6 +18,7 @@ export function App() {
           タイムラインバトルと自由なリビルドで強敵に挑む、思考型ダンジョンRPG。
         </p>
         <p className="mt-4 text-sm text-slate-400">開発中</p>
+        {game && recheck && <SavePanel game={game} recheck={recheck} />}
       </div>
     </main>
   );
