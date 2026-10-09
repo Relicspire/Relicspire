@@ -5,6 +5,7 @@ import type {
   FloorId,
   NodeId,
 } from '../data/model';
+export * from './recovery';
 import type { CampaignMetadata, GameRelease } from '../data/release-model';
 import {
   getContentAvailability,

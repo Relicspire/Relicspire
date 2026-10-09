@@ -1,5 +1,7 @@
 # 3.6 進行・報酬・探索の純粋ロジック
 
+保存層向けのID移行と進行修復は3.12の[進行移行・復旧候補](progression-recovery.md)を使う。通常検証・移動の拒否規則は変更しない。
+
 入口は`src/game/progression/index.ts`。検証済みの`GameRelease`を使用し、UI・時計・乱数・保存処理に依存しない。操作は`ProgressionResult`で候補またはパス付き拒否理由を返し、元の進行・リリースを変更しない。
 
 ## 保存対象と導出
