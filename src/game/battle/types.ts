@@ -1,3 +1,5 @@
+import type { EffectResult } from './effect-results';
+export type * from './effect-results';
 import type {
   BattleState,
   CommandReservation,
@@ -71,6 +73,8 @@ export interface BattleSession<T = null> {
   state: BattleState;
   /** 論理時刻と連番を持つ構造化ログ。 */
   log: BattleLogEntry[];
+  /** 効果単位の診断履歴。ログ連番・状態の連番とは独立する。 */
+  effectResults: EffectResult[];
   /** 呼び出し元が保持する戦闘前の確定進行。エンジンは内容を変更しない。 */
   preBattle: T;
 }

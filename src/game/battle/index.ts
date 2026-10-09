@@ -142,9 +142,10 @@ export function createBattle<T = null>(
     initialState: structuredClone(state),
     state,
     log: [],
+    effectResults: [],
     preBattle: structuredClone(preBattle),
   };
-  const engine = new Engine(content, state, session.log);
+  const engine = new Engine(content, state, session.log, session.effectResults);
   engine.record('start');
   engine.advance();
   return session;
@@ -160,7 +161,7 @@ export function advanceBattle<T>(
   options: { stopAfterUnit?: boolean } = {},
 ): BattleSession<T> {
   const next = structuredClone(session);
-  new Engine(next.content, next.state, next.log).advance(
+  new Engine(next.content, next.state, next.log, next.effectResults).advance(
     options.stopAfterUnit ?? false,
   );
   return next;
@@ -195,7 +196,12 @@ export function submitCommand<T>(
   const check = checkCommand(session, command);
   if (!check.ok) return { ...check, session };
   const next = structuredClone(session);
-  const engine = new Engine(next.content, next.state, next.log);
+  const engine = new Engine(
+    next.content,
+    next.state,
+    next.log,
+    next.effectResults,
+  );
   const { actorId, ...reservation } = command;
   engine.startCommand(engine.participant(actorId), reservation);
   if (options.advance ?? true) engine.advance();
@@ -255,7 +261,13 @@ export function retryBattle<T>(session: BattleSession<T>): BattleSession<T> {
   const next = structuredClone(session);
   next.state = structuredClone(next.initialState);
   next.log = [];
-  const engine = new Engine(next.content, next.state, next.log);
+  next.effectResults = [];
+  const engine = new Engine(
+    next.content,
+    next.state,
+    next.log,
+    next.effectResults,
+  );
   engine.record('start');
   engine.advance();
   return next;
@@ -277,7 +289,7 @@ export function escapeBattle<T>(session: BattleSession<T>): BattleSession<T> {
     p.cooldowns = [];
     p.timeStopUntil = null;
   }
-  new Engine(next.content, next.state, next.log).record(
+  new Engine(next.content, next.state, next.log, next.effectResults).record(
     'result',
     null,
     null,

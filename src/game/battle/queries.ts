@@ -1,3 +1,4 @@
+import type { EffectResult } from './effect-results';
 import type {
   BattleParticipant,
   BattleState,
@@ -46,6 +47,8 @@ export interface BattleDelta {
   before: BattleState;
   after: BattleState;
   events: BattleLogEntry[];
+  /** この処理単位で生成された診断。詠唱予約時は発動結果を含まない。 */
+  effectResults: EffectResult[];
 }
 /** 即時結果と詠唱予約・現在発動した場合の参考値を区別した予測。 */
 export type CommandPreview =
@@ -254,6 +257,10 @@ export function getBattleDelta<T>(
     before: structuredClone(before.state),
     after: structuredClone(after.state),
     events: getBattleEvents(after, before.log.at(-1)?.sequence ?? 0),
+    effectResults: getEffectResults(
+      after,
+      before.effectResults.at(-1)?.sequence ?? 0,
+    ),
     participants: after.state.participants.map((p, i) => ({
       id: p.id,
       before: structuredClone(before.state.participants[i]!),
@@ -288,7 +295,7 @@ export function getTrapReference<T>(
   const inactiveReason = blockedReason(source);
   if (inactiveReason) return { sequence, reference: null, inactiveReason };
   const next = structuredClone(session);
-  const e = new Engine(next.content, next.state, next.log);
+  const e = new Engine(next.content, next.state, next.log, next.effectResults);
   const target = e.participant(trap.targetId);
   if (target.hp === 0 || next.state.result !== 'ongoing')
     return {
@@ -323,7 +330,7 @@ export function previewCommand<T>(
   ).checkCommand(command);
   if (!check.ok) return { ok: false, check };
   const next = structuredClone(session);
-  const e = new Engine(next.content, next.state, next.log);
+  const e = new Engine(next.content, next.state, next.log, next.effectResults);
   const { actorId, ...reservation } = command;
   const actor = e.participant(actorId);
   const skill = e.skill(command.skillId);
@@ -332,7 +339,7 @@ export function previewCommand<T>(
   let reference: BattleDelta | null = null;
   if (skill.castTime > 0) {
     const ref = structuredClone(next);
-    const re = new Engine(ref.content, ref.state, ref.log);
+    const re = new Engine(ref.content, ref.state, ref.log, ref.effectResults);
     re.activate(re.participant(actorId), reservation);
     re.syncTimeline();
     reference = getBattleDelta(next, ref);
@@ -451,4 +458,17 @@ export function getEffectWarnings<T>(
     }
   }
   return warnings;
+}
+
+/** 独立した診断カーソル以降の結果をコピーして返す。
+ * @param session 照会する実行／参考セッション。
+ * @param afterSequence 最後に取得した効果結果の連番。
+ */
+export function getEffectResults<T>(
+  session: BattleSession<T>,
+  afterSequence = 0,
+): EffectResult[] {
+  return structuredClone(
+    session.effectResults.filter((result) => result.sequence > afterSequence),
+  );
 }
