@@ -26,7 +26,6 @@ async function boot() {
           game={runtime.game}
           recheck={runtime.recheck}
           deliveryReady={runtime.deliveryReady}
-          runtime={runtime}
         />
       </ErrorBoundary>,
     );

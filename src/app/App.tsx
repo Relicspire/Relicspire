@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useStore } from 'zustand';
 import type { GameState } from '../state/game';
-import type { Runtime } from './runtime';
 import { SavePanel } from './SavePanel';
 import { SettingsPanel } from './SettingsPanel';
 
@@ -10,13 +9,11 @@ export function App({
   recheck,
   deliveryReady = false,
   startupMessage = '正式なゲームデータとオフライン配信の準備を待っています。',
-  runtime,
 }: {
   game?: GameState;
   recheck?: () => Promise<void>;
   deliveryReady?: boolean;
   startupMessage?: string;
-  runtime?: Runtime;
 }) {
   return (
     <div className="app-shell">
@@ -35,7 +32,6 @@ export function App({
             game={game}
             recheck={recheck}
             deliveryReady={deliveryReady}
-            runtime={runtime}
           />
         ) : (
           <section>
@@ -54,12 +50,10 @@ function GameShell({
   game,
   recheck,
   deliveryReady,
-  runtime,
 }: {
   game: GameState;
   recheck: () => Promise<void>;
   deliveryReady: boolean;
-  runtime: Runtime | undefined;
 }) {
   const status = useStore(game.status);
   const settings = useStore(game.settings).value;
@@ -86,15 +80,11 @@ function GameShell({
     motion();
     media.addEventListener('change', motion);
     document.addEventListener('visibilitychange', visibility);
-    const unsubscribe = runtime?.ownership.subscribe(() => {
-      if (!runtime.ownership.owned) game.stopForOwnershipLoss();
-    });
     return () => {
       document.removeEventListener('visibilitychange', visibility);
       media.removeEventListener('change', motion);
-      unsubscribe?.();
     };
-  }, [game, runtime]);
+  }, []);
   useEffect(() => {
     // 将来のPixiJS/音声はこの休止・演出契約を購読し、ロジック時間を変更しない。
     document.documentElement.dataset.paused = String(

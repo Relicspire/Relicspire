@@ -91,7 +91,7 @@ export function SavePanel({
           </>
         )}
         {['error', 'readonly', 'recovery'].includes(state.value) &&
-          !game.hasPendingSave() && (
+          (!game.hasPendingSave() || state.value === 'readonly') && (
             <button onClick={() => void run(recheck)}>再確認・読み直し</button>
           )}
         {['recovery', 'ready', 'error', 'readonly'].includes(state.value) && (
