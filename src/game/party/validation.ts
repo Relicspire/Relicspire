@@ -1,3 +1,8 @@
+import type { CampaignMetadata } from '../data/release-model';
+import {
+  getCampaignSkillPointLimit,
+  getCampaignInventory,
+} from '../data/campaign';
 import {
   JOB_IDS,
   type EquipmentId,
@@ -14,8 +19,14 @@ export const MAX_PRESETS = 20;
 export const MAX_PRESET_NAME_LENGTH = 24;
 /** 取得済みボス集合から各人のポイント上限を導出する。重複と最終ボスは加算しない。
  * @param context 討伐済みIDを保持する進行コンテキスト。
+ * @param campaign 全編メタデータ。指定時は進行APIと同じ報酬から予算を導出する。
  */
-export function getSkillPointLimit(context: FormationContext): number {
+export function getSkillPointLimit(
+  context: FormationContext,
+  campaign?: CampaignMetadata,
+): number {
+  if (campaign)
+    return getCampaignSkillPointLimit(campaign, context.defeatedEnemyIds);
   return (
     INITIAL_SKILL_POINTS +
     new Set(context.defeatedEnemyIds.filter((id) => /^boss-0[1-9]$/.test(id)))
@@ -25,11 +36,14 @@ export function getSkillPointLimit(context: FormationContext): number {
 /** 初期品と討伐済み守護者から所持数を導出する。保存された所持数は信用しない。
  * @param content 検証済みの装備カタログ。
  * @param context 討伐済みIDの集合。
+ * @param campaign 全編メタデータ。指定時は未収録品も含む全編所持数を返す。
  */
 export function getInventory(
   content: GameContent,
   context: FormationContext,
+  campaign?: CampaignMetadata,
 ): Map<EquipmentId, number> {
+  if (campaign) return getCampaignInventory(campaign, context.defeatedEnemyIds);
   const defeated = new Set(context.defeatedEnemyIds);
   return new Map(
     content.equipment.map((item) => [

@@ -1,3 +1,5 @@
+import type { EffectResult } from './effect-results';
+export type * from './effect-results';
 import type {
   BattleState,
   CommandReservation,
@@ -11,6 +13,7 @@ import type {
   SkillId,
   TU,
 } from '../data/model';
+import type { CampaignMetadata } from '../data/release-model';
 import type { FormationContext, PartyBuild } from '../party/types';
 export type { PartyBuild } from '../party/types';
 /** 参加者順を固定した3人の編成と、今回戦う敵ID。 */
@@ -19,6 +22,8 @@ export interface BattleSetup {
   enemyId: EnemyId;
   /** 戦闘前に検証済みの進行。省略時は初期予算3・守護者未討伐として編成を検証する。 */
   context?: FormationContext;
+  /** 正式リリースの全編メタデータ。未収録階層への報酬参照を検証するために渡す。 */
+  campaign?: CampaignMetadata;
 }
 /** 結果再現とデバッグに使う構造化ログ。論理時刻とログ連番で順序を保持する。 */
 export interface BattleLogEntry {
@@ -68,11 +73,24 @@ export interface BattleSession<T = null> {
   state: BattleState;
   /** 論理時刻と連番を持つ構造化ログ。 */
   log: BattleLogEntry[];
+  /** 効果単位の診断履歴。ログ連番・状態の連番とは独立する。 */
+  effectResults: EffectResult[];
   /** 呼び出し元が保持する戦闘前の確定進行。エンジンは内容を変更しない。 */
   preBattle: T;
 }
 /** コマンド使用可否。拒否理由を返し、状態は更新しない。 */
-export type CommandCheck = { ok: true } | { ok: false; reason: string };
+export type CommandRejectionCode =
+  | 'not-awaiting-input'
+  | 'unknown-skill'
+  | 'not-learned'
+  | 'replaced'
+  | 'cooldown'
+  | 'invalid-element'
+  | 'unexpected-target'
+  | 'invalid-target';
+/** 表示文言と独立した拒否コードと、従来のデバッグ理由。 */
+export type CommandCheck =
+  { ok: true } | { ok: false; code: CommandRejectionCode; reason: string };
 /** 予約内容に入力者のキャラクターIDを加えたプレイヤーコマンド。 */
 export interface PlayerCommand extends CommandReservation {
   actorId: CharacterId;
@@ -80,7 +98,12 @@ export interface PlayerCommand extends CommandReservation {
 /** 確定成功なら更新セッション、不正入力なら理由と元セッションを返す。 */
 export type CommandResult<T> =
   | { ok: true; session: BattleSession<T> }
-  | { ok: false; reason: string; session: BattleSession<T> };
+  | {
+      ok: false;
+      code: CommandRejectionCode;
+      reason: string;
+      session: BattleSession<T>;
+    };
 /** 敵の現在の予告情報。詠唱中は予約を保持し、停止中は凍結残りTUを示す。 */
 export interface EnemyForecast {
   enemyId: EnemyId;

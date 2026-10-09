@@ -6,107 +6,18 @@ export interface DataIssue {
   /** 検証に失敗した理由。 */
   message: string;
 }
-/** 未知の値・データパス・エラー蓄積先を受け取る検証関数。問題をissuesへ追加する。 */
-type Check = (value: unknown, path: string, issues: DataIssue[]) => void;
-/**
- * データパスと検証理由をエラー配列へ追加する。
- *
- * @param issues 検出した問題の蓄積先。
- * @param path 問題箇所を示すデータパス。
- * @param message 検証エラーの説明文。
- */
-const fail = (issues: DataIssue[], path: string, message: string) => {
-  issues.push({ path, message });
-};
-/**
- * 上下限を満たす安全な整数の検証関数を生成する。
- * 返す検証関数は値v・データパスp・エラー蓄積先eを受け取り、不正ならeへ問題を追加する。
- *
- * @param min 許可する下限（含む）。
- * @param max 許可する上限（含む）。
- */
-const integer =
-  (min = 0, max = Number.MAX_SAFE_INTEGER): Check =>
-  (v, p, e) => {
-    if (typeof v !== 'number' || !Number.isSafeInteger(v) || v < min || v > max)
-      fail(e, p, `Expected integer ${min}..${max}`);
-  };
-/**
- * 指定した値のいずれかに一致する検証関数を生成する。
- * 返す検証関数は値v・データパスp・エラー蓄積先eを受け取り、不正ならeへ問題を追加する。
- *
- * @param values 許可する値の一覧。
- */
-const choice =
-  (...values: readonly unknown[]): Check =>
-  (v, p, e) => {
-    if (!values.includes(v)) fail(e, p, `Expected ${values.join(' | ')}`);
-  };
-/** 真偽値だけを受け入れる検証関数。 */
-const bool: Check = choice(true, false);
-/**
- * 指定正規表現に一致する文字列IDの検証関数を生成する。
- * 返す検証関数は値v・データパスp・エラー蓄積先eを受け取り、不正ならeへ問題を追加する。
- *
- * @param pattern 文字列全体への一致に使う正規表現。
- */
-const id =
-  (pattern: RegExp): Check =>
-  (v, p, e) => {
-    if (typeof v !== 'string' || !pattern.test(v)) fail(e, p, 'Invalid ID');
-  };
-/**
- * 配列の長さと全要素を検証する関数を生成する。
- * 返す検証関数は値v・データパスp・エラー蓄積先eを受け取り、不正ならeへ問題を追加する。
- *
- * @param item 配列の各要素に適用する検証関数。
- * @param min 許可する配列長の下限。
- * @param max 許可する配列長の上限。
- */
-const array =
-  (item: Check, min = 0, max = Number.MAX_SAFE_INTEGER): Check =>
-  (v, p, e) => {
-    if (!Array.isArray(v)) return fail(e, p, 'Expected array');
-    if (v.length < min || v.length > max)
-      fail(e, p, `Expected ${min}..${max} items`);
-    v.forEach((x, i) => item(x, `${p}[${i}]`, e));
-  };
-/**
- * 必須・任意項目を検証し、未知のキーを拒否するオブジェクト検証関数を生成する。
- * 返す検証関数は値v・データパスp・エラー蓄積先eを受け取り、不正ならeへ問題を追加する。
- *
- * @param fields 項目名と検証関数の対応表。
- * @param optional 省略を許可する項目名。
- */
-const object =
-  (fields: Record<string, Check>, optional: string[] = []): Check =>
-  (v, p, e) => {
-    if (typeof v !== 'object' || v === null || Array.isArray(v))
-      return fail(e, p, 'Expected object');
-    const data = v as Record<string, unknown>;
-    for (const key of Object.keys(data))
-      if (!(key in fields)) fail(e, `${p}.${key}`, 'Unsupported field');
-    for (const [key, check] of Object.entries(fields))
-      if (key in data || !optional.includes(key))
-        check(data[key], `${p}.${key}`, e);
-  };
-/**
- * 候補のいずれかに適合する値を検証する。全候補不適合なら問題数が最少の候補のエラーを返す。
- * 返す検証関数は値v・データパスp・エラー蓄積先eを受け取り、不正ならeへ問題を追加する。
- *
- * @param checks いずれか1つを満たせばよい検証関数の一覧。
- */
-const union =
-  (checks: Check[]): Check =>
-  (v, p, e) => {
-    const failures = checks.map((check) => {
-      const errors: DataIssue[] = [];
-      check(v, p, errors);
-      return errors;
-    });
-    if (!failures.some((errors) => errors.length === 0))
-      e.push(...failures.reduce((a, b) => (a.length <= b.length ? a : b)));
-  };
+import {
+  array,
+  bool,
+  choice,
+  fail,
+  id,
+  integer,
+  object,
+  union,
+} from './schema';
+import type { CampaignMetadata } from './release-model';
+import { validateCampaignMetadata, sameReward } from './campaign';
 /** 第1〜10階層の2桁番号に一致する正規表現部品。 */
 const floorPart = '(?:0[1-9]|10)';
 /** 許可されたジョブIDに一致する正規表現部品。 */
@@ -400,11 +311,16 @@ const schema = object({
  * 未知データの構造・値・ID・参照・前提循環・現行効果制約を検証する。部分カタログも許可する。
  *
  * @param input 型が未確認のコンテンツ。境界で構造と参照を検証する。
+ * @param campaign 全編メタデータ。指定時は未収録の解放先・入手元も参照できる。
  * @returns 全検証問題の一覧。問題なしなら空配列。
  */
-export function validateGameContent(input: unknown): DataIssue[] {
+export function validateGameContent(
+  input: unknown,
+  campaign?: CampaignMetadata,
+): DataIssue[] {
   const issues: DataIssue[] = [];
   schema(input, 'content', issues);
+  if (campaign) issues.push(...validateCampaignMetadata(campaign));
   if (issues.length) return issues;
   const data = input as GameContent;
   /**
@@ -586,6 +502,11 @@ export function validateGameContent(input: unknown): DataIssue[] {
     }
   });
   data.enemies.forEach((e) => {
+    if (campaign) {
+      const meta = campaign.enemies.find((item) => item.id === e.id);
+      if (!meta || !sameReward(e.reward, meta.reward))
+        fail(issues, e.id, 'Battle reward differs from campaign metadata');
+    }
     const attributes = [e.weakness, e.resistance, ...(e.immuneElements ?? [])];
     if (
       attributes.includes('none') ||
@@ -623,12 +544,20 @@ export function validateGameContent(input: unknown): DataIssue[] {
       });
     });
     if (e.reward.unlockFloorId !== null)
-      ref(floors, e.reward.unlockFloorId, e.id);
+      ref(
+        campaign ? new Set(campaign.floors.map((f) => f.id)) : floors,
+        e.reward.unlockFloorId,
+        e.id,
+      );
     e.reward.equipment.forEach((r) => ref(equipment, r.id, e.id));
   });
   data.equipment.forEach((e) => {
     if (e.kind === 'relic') {
-      ref(enemies, e.sourceEnemyId, e.id);
+      ref(
+        campaign ? new Set(campaign.enemies.map((e) => e.id)) : enemies,
+        e.sourceEnemyId,
+        e.id,
+      );
       if (e.sourceEnemyId !== e.id.replace('relic-', 'guardian-'))
         fail(issues, e.id, 'Relic guardian ID mismatch');
       const source = data.enemies.find((enemy) => enemy.id === e.sourceEnemyId);
@@ -666,10 +595,14 @@ export function validateGameContent(input: unknown): DataIssue[] {
  * 読み込み境界でコンテンツを検証し、成功時に外部変更から独立したコピーを返す。
  *
  * @param input 型が未確認のコンテンツ。境界で構造と参照を検証する。
+ * @param campaign 未収録IDを保持する検証済み全編メタデータ。省略時は部分カタログ内で参照を検証する。
  * @returns 検証済みコンテンツ。不正ならパス付きの例外を投げる。
  */
-export function parseGameContent(input: unknown): GameContent {
-  const issues = validateGameContent(input);
+export function parseGameContent(
+  input: unknown,
+  campaign?: CampaignMetadata,
+): GameContent {
+  const issues = validateGameContent(input, campaign);
   if (issues.length)
     throw new Error(issues.map((i) => `${i.path}: ${i.message}`).join('\n'));
   return structuredClone(input) as GameContent;

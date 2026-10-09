@@ -3,15 +3,10 @@ import type {
   BattleState,
   ParticipantId,
 } from '../data/battle';
-import type {
-  CharacterId,
-  EnemyId,
-  GameContent,
-  SkillId,
-  Stats,
-} from '../data/model';
+import type { CharacterId, EnemyId, GameContent, SkillId } from '../data/model';
 import { parseGameContent } from '../data/validation';
 import { validateFormation } from '../party/validation';
+import { getBuildStats } from '../party/stats';
 import { clampStats, initialWaitTU } from './calculations';
 import { Engine } from './engine';
 import type {
@@ -54,15 +49,11 @@ function buildParticipant(
     throw new Error('Invalid learned skills/prerequisites');
   if (build.equipment.length !== 6)
     throw new Error('Exactly six equipment slots are required');
-  const stats: Stats = { ...definition.baseStats };
-  for (const id of build.equipment)
-    if (id !== null) {
-      const item = content.equipment.find((e) => e.id === id);
-      if (!item) throw new Error(`Unknown equipment: ${id}`);
-      for (const key of Object.keys(stats) as (keyof Stats)[])
-        stats[key] += item.stats[key] ?? 0;
-    }
-  const finalStats = clampStats(stats);
+  const {
+    equipmentStats: stats,
+    effectiveStats: finalStats,
+    initialWait,
+  } = getBuildStats(content, build);
   return {
     id: build.id,
     side: 'party',
@@ -74,7 +65,7 @@ function buildParticipant(
     hp: finalStats.maxHp,
     action: {
       kind: 'waiting',
-      ready: { kind: 'running', at: initialWaitTU(finalStats.spd) },
+      ready: { kind: 'running', at: initialWait },
     },
     statuses: [],
     cooldowns: [],
@@ -94,7 +85,7 @@ export function createBattle<T = null>(
   setup: BattleSetup,
   preBattle: T = null as T,
 ): BattleSession<T> {
-  const content = parseGameContent(input);
+  const content = parseGameContent(input, setup.campaign);
   if (
     setup.party.length !== 3 ||
     setup.party.some((p, i) => p.id !== `party-${i + 1}`)
@@ -151,9 +142,10 @@ export function createBattle<T = null>(
     initialState: structuredClone(state),
     state,
     log: [],
+    effectResults: [],
     preBattle: structuredClone(preBattle),
   };
-  const engine = new Engine(content, state, session.log);
+  const engine = new Engine(content, state, session.log, session.effectResults);
   engine.record('start');
   engine.advance();
   return session;
@@ -169,7 +161,7 @@ export function advanceBattle<T>(
   options: { stopAfterUnit?: boolean } = {},
 ): BattleSession<T> {
   const next = structuredClone(session);
-  new Engine(next.content, next.state, next.log).advance(
+  new Engine(next.content, next.state, next.log, next.effectResults).advance(
     options.stopAfterUnit ?? false,
   );
   return next;
@@ -204,7 +196,12 @@ export function submitCommand<T>(
   const check = checkCommand(session, command);
   if (!check.ok) return { ...check, session };
   const next = structuredClone(session);
-  const engine = new Engine(next.content, next.state, next.log);
+  const engine = new Engine(
+    next.content,
+    next.state,
+    next.log,
+    next.effectResults,
+  );
   const { actorId, ...reservation } = command;
   engine.startCommand(engine.participant(actorId), reservation);
   if (options.advance ?? true) engine.advance();
@@ -264,7 +261,13 @@ export function retryBattle<T>(session: BattleSession<T>): BattleSession<T> {
   const next = structuredClone(session);
   next.state = structuredClone(next.initialState);
   next.log = [];
-  const engine = new Engine(next.content, next.state, next.log);
+  next.effectResults = [];
+  const engine = new Engine(
+    next.content,
+    next.state,
+    next.log,
+    next.effectResults,
+  );
   engine.record('start');
   engine.advance();
   return next;
@@ -286,7 +289,7 @@ export function escapeBattle<T>(session: BattleSession<T>): BattleSession<T> {
     p.cooldowns = [];
     p.timeStopUntil = null;
   }
-  new Engine(next.content, next.state, next.log).record(
+  new Engine(next.content, next.state, next.log, next.effectResults).record(
     'result',
     null,
     null,
@@ -322,3 +325,5 @@ export function getBattleOutcome<T>(
 export function getDebugSnapshot<T>(session: BattleSession<T>) {
   return structuredClone({ state: session.state, log: session.log });
 }
+
+export * from './queries';

@@ -1,4 +1,9 @@
 import type {
+  EffectContext,
+  EffectResult,
+  EffectResultCode,
+} from './effect-results';
+import type {
   ActorSnapshot,
   BattleParticipant,
   BattleState,
@@ -28,6 +33,7 @@ import {
   delayTU,
   effectiveStats,
   healAmount,
+  reviveHp,
   initialWaitTU,
 } from './calculations';
 import type {
@@ -140,12 +146,54 @@ export class Engine {
    * @param content 検証済みのゲームコンテンツ。
    * @param state 内部で更新するコピー済みの戦闘状態。
    * @param log 追記先の構造化戦闘ログ配列。
+   * @param effectResults ログ連番を変更せずに追記する効果診断。
    */
   constructor(
     readonly content: GameContent,
     readonly state: BattleState,
     readonly log: BattleLogEntry[],
+    readonly effectResults: EffectResult[] = [],
   ) {}
+  /** 効果の処理位置から診断を記録する。状態・ログの連番には触れない。
+   * @param context 定義位置と当初の対象。未指定なら記録しない。
+   * @param actor 効果の実行者。
+   * @param target 実際の対象。対象なしならnull。
+   * @param kind 効果の種類。
+   * @param code 成立種別または不成立理由。
+   * @param amount 実際に適用したHP量・TU・解除数。
+   * @param before 更新前の対象状態。
+   * @param after 更新後の対象状態。
+   * @param cause 親攻撃の不成立理由。
+   */
+  diagnose(
+    context: EffectContext | null,
+    actor: BattleParticipant,
+    target: BattleParticipant | null,
+    kind: EffectResult['kind'],
+    code: EffectResultCode,
+    amount: number | null = null,
+    before: StatusEffect | null = null,
+    after: StatusEffect | null = null,
+    cause: EffectResultCode | null = null,
+  ) {
+    if (!context) return;
+    this.effectResults.push({
+      ...context,
+      sequence: this.effectResults.length + 1,
+      now: this.state.now,
+      actorId: actor.id,
+      targetId: target?.id ?? null,
+      kind,
+      outcome: ['applied', 'status-added', 'status-refreshed'].includes(code)
+        ? 'applied'
+        : 'rejected',
+      code,
+      cause,
+      amount,
+      statusBefore: structuredClone(before),
+      statusAfter: structuredClone(after),
+    });
+  }
   /**
    * 参加者IDから現在の参加者を検索する。存在しないIDは例外にする。
    *
@@ -415,21 +463,33 @@ export class Engine {
       actor.timeStopUntil !== null ||
       this.inputActor()?.id !== actor.id
     )
-      return { ok: false, reason: 'Actor is not awaiting input' };
+      return {
+        ok: false,
+        code: 'not-awaiting-input',
+        reason: 'Actor is not awaiting input',
+      };
     let skill: SkillDefinition;
     try {
       skill = this.skill(command.skillId);
     } catch {
-      return { ok: false, reason: 'Unknown skill' };
+      return { ok: false, code: 'unknown-skill', reason: 'Unknown skill' };
     }
     if (skill.id !== 'basic-attack' && skill.id !== 'wait') {
       if (
         !actor.learnedSkills.some((id) => id === skill.id) ||
         !skill.id.startsWith(`${actor.jobId}-`)
       )
-        return { ok: false, reason: 'Skill is not learned by this job' };
+        return {
+          ok: false,
+          code: 'not-learned',
+          reason: 'Skill is not learned by this job',
+        };
       if (!getActiveSkillIds(this.content, actor).includes(skill.id))
-        return { ok: false, reason: 'Skill has been replaced' };
+        return {
+          ok: false,
+          code: 'replaced',
+          reason: 'Skill has been replaced',
+        };
     }
     const cooldown = actor.cooldowns.find((c) => c.id === skill.cooldownId);
     if (
@@ -438,22 +498,30 @@ export class Engine {
         ? cooldown.timer.remaining > 0
         : cooldown.timer.at > this.state.now)
     )
-      return { ok: false, reason: 'Skill is on cooldown' };
+      return { ok: false, code: 'cooldown', reason: 'Skill is on cooldown' };
     if (
       skill.elementChoices.length
         ? !skill.elementChoices.some((e) => e === command.chosenElement)
         : command.chosenElement !== null
     )
-      return { ok: false, reason: 'Invalid element choice' };
+      return {
+        ok: false,
+        code: 'invalid-element',
+        reason: 'Invalid element choice',
+      };
     if (['self', 'ally-all', 'enemy-all'].includes(skill.target)) {
       if (command.selectedTargetId !== null)
-        return { ok: false, reason: 'This skill does not select a target' };
+        return {
+          ok: false,
+          code: 'unexpected-target',
+          reason: 'This skill does not select a target',
+        };
     } else {
       const target = this.state.participants.find(
         (p) => p.id === command.selectedTargetId,
       );
       if (!target || !this.eligible(actor, target, skill.target))
-        return { ok: false, reason: 'Invalid target' };
+        return { ok: false, code: 'invalid-target', reason: 'Invalid target' };
     }
     return { ok: true };
   }
@@ -507,7 +575,7 @@ export class Engine {
    */
   revive(target: BattleParticipant, ratio: number) {
     if (target.hp !== 0 || target.side !== 'party') return;
-    target.hp = Math.max(1, Math.floor((target.stats.maxHp * ratio) / 10000));
+    target.hp = reviveHp(target.stats.maxHp, ratio);
     target.statuses = [];
     target.timeStopUntil = null;
     target.action = {
@@ -580,14 +648,31 @@ export class Engine {
    * @param actor 効果の実行者。
    * @param target 効果の対象。
    * @param effect 今回適用する効果データ。
+   * @param context 診断するスキル・効果・付随効果の位置。
    */
   utility(
     actor: BattleParticipant,
     target: BattleParticipant,
     effect: UtilityPayload,
+    context: EffectContext | null = null,
   ) {
-    if (target.hp === 0) return;
+    if (target.hp === 0) {
+      this.diagnose(context, actor, target, effect.kind, 'dead-target');
+      return;
+    }
     if (effect.kind === 'apply-status') {
+      if (
+        effect.status.familyId === 'time-stop' &&
+        this.enemy(target)?.timeStopImmune
+      ) {
+        this.diagnose(context, actor, target, effect.kind, 'immune-stop');
+        return;
+      }
+      const before = structuredClone(
+        target.statuses.find(
+          (s) => s.spec.familyId === effect.status.familyId,
+        ) ?? null,
+      );
       this.applyStatus(
         actor,
         target,
@@ -595,14 +680,35 @@ export class Engine {
         effect.duration,
         effect.dispellable,
       );
+      const after = target.statuses.find(
+        (s) => s.spec.familyId === effect.status.familyId,
+      )!;
+      this.diagnose(
+        context,
+        actor,
+        target,
+        effect.kind,
+        before ? 'status-refreshed' : 'status-added',
+        effect.duration,
+        before,
+        after,
+      );
       return;
     }
     if (effect.kind === 'dispel') {
-      target.statuses
+      const removed = target.statuses
         .filter((s) => s.dispellable && polarity(s.spec) === effect.polarity)
         .sort((a, b) => a.sequence - b.sequence)
-        .slice(0, effect.count)
-        .forEach((s) => this.removeStatus(target, s, 'dispel'));
+        .slice(0, effect.count);
+      removed.forEach((s) => this.removeStatus(target, s, 'dispel'));
+      this.diagnose(
+        context,
+        actor,
+        target,
+        effect.kind,
+        removed.length ? 'applied' : 'no-dispellable-status',
+        removed.length,
+      );
       return;
     }
     if (effect.kind === 'cancel-cast') {
@@ -612,6 +718,15 @@ export class Engine {
       ) {
         target.action = { kind: 'waiting', ready: this.timer(target, 30) };
         this.record('cancel', actor.id, target.id);
+        this.diagnose(context, actor, target, effect.kind, 'applied');
+      } else {
+        this.diagnose(
+          context,
+          actor,
+          target,
+          effect.kind,
+          this.enemy(target)?.cancelImmune ? 'immune-cancel' : 'not-casting',
+        );
       }
       return;
     }
@@ -621,12 +736,31 @@ export class Engine {
         (amount * (10000 - (this.enemy(target)?.knockbackResistance ?? 0))) /
           10000,
       );
-    if (amount === 0) return;
+    if (amount === 0) {
+      this.diagnose(
+        context,
+        actor,
+        target,
+        effect.kind,
+        effect.amount === 0 ? 'schedule-limit' : 'immune-shift',
+        0,
+      );
+      return;
+    }
     const a = target.action;
     if (a.kind === 'acting') {
       if (effect.direction === 'delay') {
         a.pendingKnockback += amount;
         this.record('shift', actor.id, target.id, amount, 'delay');
+        this.diagnose(context, actor, target, effect.kind, 'applied', amount);
+      } else {
+        this.diagnose(
+          context,
+          actor,
+          target,
+          effect.kind,
+          'no-shiftable-schedule',
+        );
       }
       return;
     }
@@ -634,6 +768,15 @@ export class Engine {
       if (effect.direction === 'delay') {
         target.action = { kind: 'waiting', ready: this.timer(target, amount) };
         this.record('shift', actor.id, target.id, amount, 'delay');
+        this.diagnose(context, actor, target, effect.kind, 'applied', amount);
+      } else {
+        this.diagnose(
+          context,
+          actor,
+          target,
+          effect.kind,
+          'no-shiftable-schedule',
+        );
       }
       return;
     }
@@ -643,7 +786,17 @@ export class Engine {
         : a.kind === 'casting'
           ? a.cast.completes
           : null;
-    if (!timer) return;
+    if (!timer) {
+      this.diagnose(
+        context,
+        actor,
+        target,
+        effect.kind,
+        'no-shiftable-schedule',
+      );
+      return;
+    }
+    const beforeTime = timer.kind === 'running' ? timer.at : timer.remaining;
     if (timer.kind === 'running')
       timer.at =
         effect.direction === 'delay'
@@ -655,6 +808,15 @@ export class Engine {
           ? timer.remaining + amount
           : Math.max(1, timer.remaining - amount);
     this.record('shift', actor.id, target.id, amount, effect.direction);
+    const afterTime = timer.kind === 'running' ? timer.at : timer.remaining;
+    this.diagnose(
+      context,
+      actor,
+      target,
+      effect.kind,
+      beforeTime === afterTime ? 'schedule-limit' : 'applied',
+      Math.abs(afterTime - beforeTime),
+    );
   }
   /**
    * 1ヒットの被弾・付随効果・反射・反撃を解決し、必要な追撃候補を記録する。
@@ -668,6 +830,7 @@ export class Engine {
    * @param u 当該処理単位の反応実行記録と自己蘇生予約。
    * @param basic trueなら基本行動としてかばう・反射・反撃・追撃候補を処理する。反応攻撃ではfalse。
    * @param single trueなら単体攻撃としてかばうを判定する。
+   * @param context 基本効果または反応・罠の診断位置。
    */
   attack(
     actor: BattleParticipant,
@@ -679,8 +842,25 @@ export class Engine {
     u: Unit,
     basic: boolean,
     single: boolean,
+    context: EffectContext | null = null,
   ) {
-    if (original.hp === 0) return;
+    if (original.hp === 0) {
+      this.diagnose(context, actor, original, 'attack', 'dead-target');
+      attached.forEach((effect, index) =>
+        this.diagnose(
+          context && { ...context, attachedIndex: index },
+          actor,
+          original,
+          effect.kind,
+          'attack-rejected',
+          null,
+          null,
+          null,
+          'dead-target',
+        ),
+      );
+      return;
+    }
     let target = original;
     if (basic && single && original.side === 'party') {
       const cover = original.statuses.find((s) => s.spec.familyId === 'cover');
@@ -700,7 +880,23 @@ export class Engine {
       payload.element === 'chosen' ? command.chosenElement! : payload.element;
     const def = this.enemy(target);
     const amount = damageAmount(payload, snapshot, target, element, def);
-    if (amount === 0) return;
+    if (amount === 0) {
+      this.diagnose(context, actor, target, 'attack', 'immune-element', 0);
+      attached.forEach((effect, index) =>
+        this.diagnose(
+          context && { ...context, attachedIndex: index },
+          actor,
+          target,
+          effect.kind,
+          'attack-rejected',
+          null,
+          null,
+          null,
+          'immune-element',
+        ),
+      );
+      return;
+    }
     const lost = this.loseHp(
       target,
       amount,
@@ -708,6 +904,7 @@ export class Engine {
       u,
       basic ? 'attack' : 'reaction',
     );
+    this.diagnose(context, actor, target, 'attack', 'applied', lost);
     if (
       target.hp > 0 &&
       target.side === 'enemy' &&
@@ -729,9 +926,17 @@ export class Engine {
       }
     }
     const order = { shift: 0, 'cancel-cast': 1, 'apply-status': 2, dispel: 3 };
-    [...attached]
-      .sort((a, b) => order[a.kind] - order[b.kind])
-      .forEach((e) => this.utility(actor, target, e));
+    attached
+      .map((effect, index) => ({ effect, index }))
+      .sort((a, b) => order[a.effect.kind] - order[b.effect.kind])
+      .forEach(({ effect, index }) =>
+        this.utility(
+          actor,
+          target,
+          effect,
+          context && { ...context, attachedIndex: index },
+        ),
+      );
     if (!basic || lost === 0) return;
     if (!u.firstHit && target.side === 'enemy') {
       u.firstHit = true;
@@ -776,6 +981,14 @@ export class Engine {
           u,
           false,
           true,
+          {
+            skillId: null,
+            effectIndex: null,
+            attachedIndex: null,
+            origin: 'counter',
+            originId: counter.id,
+            requestedTargetId: actor.id,
+          },
         );
       }
     }
@@ -805,7 +1018,7 @@ export class Engine {
     const enemies = this.state.participants.filter(
       (p) => p.side !== actor.side && p.hp > 0,
     );
-    if (!valid)
+    if (!valid) {
       this.record(
         'fizzle',
         actor.id,
@@ -814,8 +1027,33 @@ export class Engine {
         null,
         skill.id,
       );
-    else {
-      for (const effect of skill.effects) {
+      skill.effects.forEach((effect, effectIndex) => {
+        const context: EffectContext = {
+          skillId: skill.id,
+          effectIndex,
+          attachedIndex: null,
+          origin: 'skill',
+          originId: null,
+          requestedTargetId: command.selectedTargetId,
+        };
+        this.diagnose(context, actor, selected, effect.kind, 'invalid-target');
+        if (effect.kind === 'attack')
+          effect.attached.forEach((attached, index) =>
+            this.diagnose(
+              { ...context, attachedIndex: index },
+              actor,
+              selected,
+              attached.kind,
+              'attack-rejected',
+              null,
+              null,
+              null,
+              'invalid-target',
+            ),
+          );
+      });
+    } else {
+      for (const [effectIndex, effect] of skill.effects.entries()) {
         const targets =
           effect.target === 'self'
             ? [actor]
@@ -826,7 +1064,18 @@ export class Engine {
               : effect.target === 'all-allies'
                 ? allies
                 : enemies;
+        const context: EffectContext = {
+          skillId: skill.id,
+          effectIndex,
+          attachedIndex: null,
+          origin: 'skill',
+          originId: null,
+          requestedTargetId: null,
+        };
+        if (!targets.length)
+          this.diagnose(context, actor, null, effect.kind, 'no-target');
         for (const target of targets) {
+          const targetContext = { ...context, requestedTargetId: target.id };
           if (effect.kind === 'revive') {
             if (
               actor.side === 'party' &&
@@ -835,11 +1084,59 @@ export class Engine {
               target.id !== actor.id &&
               target.side === actor.side
             ) {
+              const eligible = target.hp === 0;
               this.revive(target, effect.hpRatio);
               u.revives.delete(target.id);
+              this.diagnose(
+                targetContext,
+                actor,
+                target,
+                effect.kind,
+                eligible ? 'applied' : 'invalid-target',
+                eligible ? target.hp : null,
+              );
+            } else {
+              this.diagnose(
+                targetContext,
+                actor,
+                target,
+                effect.kind,
+                'invalid-target',
+              );
             }
           } else if (target.hp > 0)
-            this.effect(actor, target, effect, snapshot, command, u);
+            this.effect(
+              actor,
+              target,
+              effect,
+              snapshot,
+              command,
+              u,
+              targetContext,
+            );
+          else {
+            this.diagnose(
+              targetContext,
+              actor,
+              target,
+              effect.kind,
+              'dead-target',
+            );
+            if (effect.kind === 'attack')
+              effect.attached.forEach((attached, index) =>
+                this.diagnose(
+                  { ...targetContext, attachedIndex: index },
+                  actor,
+                  target,
+                  attached.kind,
+                  'attack-rejected',
+                  null,
+                  null,
+                  null,
+                  'dead-target',
+                ),
+              );
+          }
         }
       }
       for (const candidate of u.follows) {
@@ -867,6 +1164,14 @@ export class Engine {
             u,
             false,
             true,
+            {
+              skillId: null,
+              effectIndex: null,
+              attachedIndex: null,
+              origin: 'follow',
+              originId: status.id,
+              requestedTargetId: target.id,
+            },
           );
         }
       }
@@ -890,6 +1195,7 @@ export class Engine {
    * @param snapshot 発動直前に固定した行動者の能力とHP。
    * @param command 使用スキル・予約対象・属性選択を含むコマンド。プレイヤー入力では行動者IDも含む。
    * @param u 当該処理単位の反応実行記録と自己蘇生予約。
+   * @param context 診断する独立効果の位置。
    */
   effect(
     actor: BattleParticipant,
@@ -898,6 +1204,7 @@ export class Engine {
     snapshot: ActorSnapshot,
     command: CommandReservation,
     u: Unit,
+    context: EffectContext | null = null,
   ) {
     if (effect.kind === 'attack')
       this.attack(
@@ -910,6 +1217,7 @@ export class Engine {
         u,
         true,
         effect.target === 'selected',
+        context,
       );
     else if (effect.kind === 'heal') {
       const amount = Math.min(
@@ -918,8 +1226,19 @@ export class Engine {
       );
       target.hp += amount;
       this.record('heal', actor.id, target.id, amount);
+      this.diagnose(
+        context,
+        actor,
+        target,
+        effect.kind,
+        amount > 0 ? 'applied' : 'hp-full',
+        amount,
+      );
     } else if (effect.kind === 'trap') {
-      if (target.side !== 'enemy') return;
+      if (target.side !== 'enemy') {
+        this.diagnose(context, actor, target, effect.kind, 'invalid-target');
+        return;
+      }
       this.state.traps = this.state.traps.filter(
         (t) => t.sourceId !== actor.id,
       );
@@ -933,7 +1252,16 @@ export class Engine {
         snapshot: 'on-trigger',
       });
       this.record('trap', actor.id, target.id, effect.duration, 'set');
-    } else if (effect.kind !== 'revive') this.utility(actor, target, effect);
+      this.diagnose(
+        context,
+        actor,
+        target,
+        effect.kind,
+        'applied',
+        effect.duration,
+      );
+    } else if (effect.kind !== 'revive')
+      this.utility(actor, target, effect, context);
   }
   /**
    * CDを確定時刻から開始し、詠唱を予約するか即時効果を発動する。
@@ -1054,6 +1382,14 @@ export class Engine {
         u,
         false,
         true,
+        {
+          skillId: null,
+          effectIndex: null,
+          attachedIndex: null,
+          origin: 'trap',
+          originId: trap.sequence,
+          requestedTargetId: p.id,
+        },
       );
       this.finishUnit(u);
       if (stopAfterUnit) return;

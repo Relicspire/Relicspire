@@ -1,3 +1,4 @@
+import { migrateParty, previewPartyRepair } from './repair';
 import type { GameContent } from '../data/model';
 import type {
   BuildPreset,
@@ -10,11 +11,8 @@ import type {
   PresetIdMigration,
   PresetMetadata,
   PresetRepair,
-  RepairChange,
 } from './types';
 import {
-  getInventory,
-  getJobNodes,
   MAX_PRESET_NAME_LENGTH,
   MAX_PRESETS,
   validateFormation,
@@ -51,7 +49,7 @@ export function normalizePresetName(input: string): FormationResult<string> {
 /** プリセットの管理項目だけを検証する。編成が旧版でも勝手に削除しない。
  * @param input 読み込みまたは操作対象のプリセット。
  */
-function metadataIssues(input: unknown): FormationIssue[] {
+export function validatePresetMetadata(input: unknown): FormationIssue[] {
   if (!input || typeof input !== 'object' || Array.isArray(input))
     return [
       { path: 'preset', code: 'shape', message: 'プリセットの構造が不正です' },
@@ -123,7 +121,7 @@ export function validatePreset(
   input: unknown,
   context: FormationContext,
 ): FormationIssue[] {
-  const issues = metadataIssues(input);
+  const issues = validatePresetMetadata(input);
   if (issues.length) return issues;
   return validateFormation(content, (input as BuildPreset).party, context);
 }
@@ -286,29 +284,11 @@ function missingPreset(): FormationResult<FormationState> {
     ],
   };
 }
-/** 旧IDの明示対応だけを適用する。削除・費用超過の修復はここではしない。
- * @param preset 元プリセット。
- * @param migration 明示された旧ID→新ID対応表。
- */
-function migratedParty(
-  preset: BuildPreset,
-  migration: PresetIdMigration,
-): PartyFormation {
-  const party = structuredClone(preset.party);
-  for (const b of party) {
-    b.jobId = migration.jobs?.[b.jobId] ?? b.jobId;
-    b.learnedSkills = b.learnedSkills.map((id) => migration.skills?.[id] ?? id);
-    b.equipment = b.equipment.map((id) =>
-      id === null ? null : (migration.equipment?.[id] ?? id),
-    ) as typeof b.equipment;
-  }
-  return party;
-}
-/** 装備空欄化・未知スキルと依存子孫除去をプレビューする。予算超過・未知職は残存問題として返す。
- * @param content 現在カタログ。
- * @param preset 元の保存済みプリセット。変更しない。
- * @param context 現在の進行。
- * @param migration 明示対応表。省略時はID変換なし。
+/** 保存プリセットの管理情報を確認してから共通の編成修復候補を生成する。
+ * @param content 現在の検証済みカタログ。
+ * @param preset 原本を保持する保存済みプリセット。
+ * @param context 検証済みの進行と戦闘状態。
+ * @param migration 保存層が選択した明示ID対応表。
  */
 export function previewPresetRepair(
   content: GameContent,
@@ -316,84 +296,10 @@ export function previewPresetRepair(
   context: FormationContext,
   migration: PresetIdMigration = {},
 ): FormationResult<PresetRepair> {
-  const meta = metadataIssues(preset);
-  if (meta.length) return { ok: false, issues: meta };
-  // 枠数や人物順の破損は自動で解釈しない。参照・前提・所持制約だけを修復する。
-  const structural = validateFormation(content, preset.party, context).filter(
-    (i) => ['party-size', 'shape', 'character', 'slots'].includes(i.code),
-  );
-  if (structural.length) return { ok: false, issues: structural };
-  const party = migratedParty(preset, migration);
-  const changes: RepairChange[] = [];
-  const inventory = getInventory(content, context);
-  const used = new Map<string, number>();
-  for (let i = 0; i < party.length; i++) {
-    const b = party[i]!;
-    const nodes = getJobNodes(content, b.jobId);
-    if (content.jobs.some((j) => j.id === b.jobId)) {
-      let kept = b.learnedSkills.filter((id) => nodes.some((n) => n.id === id));
-      let changed = true;
-      while (changed) {
-        const valid = kept.filter((id) =>
-          nodes
-            .find((n) => n.id === id)!
-            .prerequisites.every((p) => kept.includes(p)),
-        );
-        changed = valid.length !== kept.length;
-        kept = valid;
-      }
-      b.learnedSkills = kept;
-    }
-    for (let slot = 0; slot < 6; slot++) {
-      const id = b.equipment[slot];
-      if (id === null) continue;
-      const item = content.equipment.find((e) => e.id === id);
-      const count = used.get(id!) ?? 0;
-      const allowed = item
-        ? Math.min(
-            inventory.get(item.id) ?? 0,
-            item.kind === 'relic' ? 1 : item.maxOwned,
-          )
-        : 0;
-      if (count >= allowed) b.equipment[slot] = null;
-      else used.set(id!, count + 1);
-    }
-    const original = preset.party[i]!;
-    if (original.jobId !== b.jobId)
-      changes.push({
-        path: `party[${i}].jobId`,
-        before: original.jobId,
-        after: b.jobId,
-        reason: '明示されたジョブID移行',
-      });
-    original.learnedSkills.forEach((id) => {
-      const mapped = migration.skills?.[id] ?? id;
-      if (!b.learnedSkills.includes(mapped) || mapped !== id)
-        changes.push({
-          path: `party[${i}].learnedSkills`,
-          before: id,
-          after: b.learnedSkills.includes(mapped) ? mapped : null,
-          reason: 'ID移行または未知ノード・前提欠落の除去',
-        });
-    });
-    original.equipment.forEach((id, slot) => {
-      if (id !== b.equipment[slot])
-        changes.push({
-          path: `party[${i}].equipment[${slot}]`,
-          before: id ?? '',
-          after: b.equipment[slot] ?? null,
-          reason: 'ID移行または未取得・削除・所持数超過の空欄化',
-        });
-    });
-  }
-  return {
-    ok: true,
-    value: {
-      party,
-      changes,
-      issues: validateFormation(content, party, context),
-    },
-  };
+  const meta = validatePresetMetadata(preset);
+  return meta.length
+    ? { ok: false, issues: meta }
+    : previewPartyRepair(content, preset.party, context, migration);
 }
 /** 通常呼出は不整合を拒否する。repair指定はUIで差分確認・確定した場合だけ渡す。
  * @param content 現在カタログ。
@@ -422,7 +328,7 @@ export function recallPreset(
     };
   const preset = state.presets.find((p) => p.id === id);
   if (!preset) return missingPreset();
-  const meta = metadataIssues(preset);
+  const meta = validatePresetMetadata(preset);
   if (meta.length) return { ok: false, issues: meta };
   const structural = validateFormation(content, preset.party, context).filter(
     (i) => ['party-size', 'shape', 'character', 'slots'].includes(i.code),
@@ -441,7 +347,7 @@ export function recallPreset(
       return { ok: false, issues: preview.value.issues };
     party = preview.value.party;
   } else {
-    party = migratedParty(preset, options.migration ?? {});
+    party = migrateParty(preset.party, options.migration ?? {});
     const issues = validateFormation(content, party, context);
     if (issues.length) return { ok: false, issues };
   }
