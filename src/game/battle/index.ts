@@ -94,7 +94,7 @@ export function createBattle<T = null>(
   setup: BattleSetup,
   preBattle: T = null as T,
 ): BattleSession<T> {
-  const content = parseGameContent(input);
+  const content = parseGameContent(input, setup.campaign);
   if (
     setup.party.length !== 3 ||
     setup.party.some((p, i) => p.id !== `party-${i + 1}`)

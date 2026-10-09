@@ -11,6 +11,7 @@ import type {
   SkillId,
   TU,
 } from '../data/model';
+import type { CampaignMetadata } from '../data/release-model';
 import type { FormationContext, PartyBuild } from '../party/types';
 export type { PartyBuild } from '../party/types';
 /** 参加者順を固定した3人の編成と、今回戦う敵ID。 */
@@ -19,6 +20,8 @@ export interface BattleSetup {
   enemyId: EnemyId;
   /** 戦闘前に検証済みの進行。省略時は初期予算3・守護者未討伐として編成を検証する。 */
   context?: FormationContext;
+  /** 正式リリースの全編メタデータ。未収録階層への報酬参照を検証するために渡す。 */
+  campaign?: CampaignMetadata;
 }
 /** 結果再現とデバッグに使う構造化ログ。論理時刻とログ連番で順序を保持する。 */
 export interface BattleLogEntry {

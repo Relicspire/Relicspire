@@ -43,3 +43,7 @@ Effectは判別可能なunionとし、攻撃・回復・状態付与・解除・
 ## 3.2での拡張
 
 BattleParticipantのActionStateへ、終了済みで行動予定を持たない`finished`を追加した。EnemyDefinitionの`immuneElements`は省略時空配列として扱い、属性無効の境界例を検証するために使用する。通常攻撃・待機の固定定義、現行敵のCD0・固定属性、弱点・耐性・無効の排他性も読み込み時に検証する。エンジンのAPIは [バトルエンジン](./battle-engine.md) を参照。
+
+## 3.5での拡張
+
+全編進行ID・固定報酬の`CampaignMetadata`、プレイ可能範囲の`ReleaseScope`、正式収録の`GameRelease`を追加した。部分カタログ検証は維持し、正式カタログと表示の検証を別の入口にした。`parseGameContent`の第2引数に全編メタデータを渡すと、未収録の解放先・入手元を検証できる。詳細は[リリースカタログ](release-catalog.md)を参照。
