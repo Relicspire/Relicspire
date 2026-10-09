@@ -1,4 +1,10 @@
-import type { BattleReward, FloorId, EnemyId, RelicId } from './model';
+import type {
+  BattleReward,
+  FloorId,
+  EnemyId,
+  RelicId,
+  EquipmentId,
+} from './model';
 import type {
   CampaignMetadata,
   ContentAvailability,
@@ -169,4 +175,48 @@ export function getContentAvailability(
     : scope.playableFloorIds.includes(floor)
       ? 'playable'
       : 'unavailable';
+}
+
+/** 正式収録で必要な初期装備ID。性能値は正式コンテンツ側が定義する。 */
+export const STARTER_IDS = [
+  'starter-sword',
+  'starter-staff',
+  'starter-armor',
+  'starter-charm',
+  'starter-boots',
+  'starter-ring',
+] as const;
+
+/** 討伐集合と正規報酬から個人予算を導出する。重複は加算しない。
+ * @param campaign 検証済み全編メタデータ。
+ * @param defeatedEnemyIds 討伐済みID。進行順序の検証は進行APIが行う。
+ */
+export function getCampaignSkillPointLimit(
+  campaign: CampaignMetadata,
+  defeatedEnemyIds: readonly EnemyId[],
+): number {
+  const defeated = new Set(defeatedEnemyIds);
+  return (
+    3 +
+    campaign.enemies
+      .filter((e) => defeated.has(e.id))
+      .reduce((sum, e) => sum + e.reward.skillPointsPerCharacter, 0)
+  );
+}
+/** 全編の初期品・遺物所持数を導出する。未収録品もIDとして保持する。
+ * @param campaign 検証済み全編メタデータ。
+ * @param defeatedEnemyIds 討伐済みの正規ID集合。
+ */
+export function getCampaignInventory(
+  campaign: CampaignMetadata,
+  defeatedEnemyIds: readonly EnemyId[],
+): Map<EquipmentId, number> {
+  const defeated = new Set(defeatedEnemyIds);
+  const inventory = new Map<EquipmentId, number>(
+    STARTER_IDS.map((id) => [id, 3]),
+  );
+  campaign.relics.forEach((r) =>
+    inventory.set(r.id, defeated.has(r.sourceEnemyId) ? 1 : 0),
+  );
+  return inventory;
 }

@@ -9,15 +9,8 @@ import { validateGameContent, type DataIssue } from './validation';
 import { validateCampaignMetadata, sameReward } from './campaign';
 import { array, fail, id, integer, object, type Check } from './schema';
 import { validateFormation } from '../party/validation';
-/** 正式収録で必要な初期装備ID。性能値は正式コンテンツ側が定義する。 */
-export const STARTER_IDS = [
-  'starter-sword',
-  'starter-staff',
-  'starter-armor',
-  'starter-charm',
-  'starter-boots',
-  'starter-ring',
-] as const;
+import { STARTER_IDS } from './campaign';
+export { STARTER_IDS } from './campaign';
 /** 表示対応を必須にする全属性。 */
 export const ELEMENT_IDS = [
   'none',
