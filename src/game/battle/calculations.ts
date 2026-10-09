@@ -41,7 +41,9 @@ export function clampStats(stats: Stats): Stats {
  *
  * @param participant 能力を参照する戦闘参加者。
  */
-export function effectiveStats(participant: BattleParticipant): Stats {
+export function effectiveStats(
+  participant: Pick<BattleParticipant, 'stats' | 'statuses'>,
+): Stats {
   const result = { ...participant.stats };
   for (const stat of ['atk', 'mag', 'spd'] as const) {
     let modifier = 0;
@@ -120,7 +122,7 @@ export function elementMultiplier(
 export function damageAmount(
   attack: AttackPayload,
   actor: ActorSnapshot,
-  target: BattleParticipant,
+  target: Pick<BattleParticipant, 'stats' | 'statuses' | 'action'>,
   element: Element,
   enemy: EnemyDefinition | null,
 ): number {
@@ -192,3 +194,10 @@ export const healAmount = (power: number, actor: ActorSnapshot) =>
         (100n * 10000n),
     ),
   );
+
+/** 最大HPと10000基準の蘇生割合から復帰HPを導出する。
+ * @param maxHp 対象の確定最大HP。
+ * @param ratio 蘇生時のHP割合。
+ */
+export const reviveHp = (maxHp: number, ratio: number) =>
+  Math.max(1, Math.floor((maxHp * ratio) / 10000));

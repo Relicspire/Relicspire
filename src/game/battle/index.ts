@@ -3,15 +3,10 @@ import type {
   BattleState,
   ParticipantId,
 } from '../data/battle';
-import type {
-  CharacterId,
-  EnemyId,
-  GameContent,
-  SkillId,
-  Stats,
-} from '../data/model';
+import type { CharacterId, EnemyId, GameContent, SkillId } from '../data/model';
 import { parseGameContent } from '../data/validation';
 import { validateFormation } from '../party/validation';
+import { getBuildStats } from '../party/stats';
 import { clampStats, initialWaitTU } from './calculations';
 import { Engine } from './engine';
 import type {
@@ -54,15 +49,11 @@ function buildParticipant(
     throw new Error('Invalid learned skills/prerequisites');
   if (build.equipment.length !== 6)
     throw new Error('Exactly six equipment slots are required');
-  const stats: Stats = { ...definition.baseStats };
-  for (const id of build.equipment)
-    if (id !== null) {
-      const item = content.equipment.find((e) => e.id === id);
-      if (!item) throw new Error(`Unknown equipment: ${id}`);
-      for (const key of Object.keys(stats) as (keyof Stats)[])
-        stats[key] += item.stats[key] ?? 0;
-    }
-  const finalStats = clampStats(stats);
+  const {
+    equipmentStats: stats,
+    effectiveStats: finalStats,
+    initialWait,
+  } = getBuildStats(content, build);
   return {
     id: build.id,
     side: 'party',
@@ -74,7 +65,7 @@ function buildParticipant(
     hp: finalStats.maxHp,
     action: {
       kind: 'waiting',
-      ready: { kind: 'running', at: initialWaitTU(finalStats.spd) },
+      ready: { kind: 'running', at: initialWait },
     },
     statuses: [],
     cooldowns: [],

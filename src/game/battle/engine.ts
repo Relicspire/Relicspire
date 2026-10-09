@@ -28,6 +28,7 @@ import {
   delayTU,
   effectiveStats,
   healAmount,
+  reviveHp,
   initialWaitTU,
 } from './calculations';
 import type {
@@ -527,7 +528,7 @@ export class Engine {
    */
   revive(target: BattleParticipant, ratio: number) {
     if (target.hp !== 0 || target.side !== 'party') return;
-    target.hp = Math.max(1, Math.floor((target.stats.maxHp * ratio) / 10000));
+    target.hp = reviveHp(target.stats.maxHp, ratio);
     target.statuses = [];
     target.timeStopUntil = null;
     target.action = {

@@ -303,3 +303,5 @@ export function createInitialFormation(
 }
 
 export * from './recovery';
+export * from './stats';
+export * from './queries';
