@@ -260,6 +260,9 @@ describe('保存管理と復旧', () => {
     expect(
       deriveProgression(release.campaign, progression).skillPointLimit,
     ).toBe(4);
+    expect(
+      deriveProgression(release.campaign, progression).unlockedFloorIds,
+    ).toEqual(['floor-01', 'floor-02']);
     expect(game.battle.getState().session).toBeNull();
     expect(game.persisted.getState().data?.settings.muted).toBe(true);
   });

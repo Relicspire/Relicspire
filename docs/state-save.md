@@ -35,7 +35,7 @@ fake-indexeddbによる保存・再読込、競合、配信版照合、容量不
 
 残作業は [開発タスク](./tasks.md) の次の箇所で管理する。
 
-- タスク4: S04・S05・S08～S10を含む保存層の自動テストの網羅と、既存テストとの対応付け。
+- タスク4: S01～S12の保存層の自動テストと既存テストの対応付けは完了（下表）。
 - 5.1: 正式なゲームデータを使う起動配線、復旧UI・Web Locks・読取専用画面・所有権喪失時停止の接続。
 - 5.3～5.4: 探索・戦闘画面の保存境界と遷移への接続。
 - 5.5: 第1階層でのS01～S08・S11～S12の統合検証。
@@ -43,3 +43,23 @@ fake-indexeddbによる保存・再読込、競合、配信版照合、容量不
 - 7.2: S01～S12、実複数タブ、所有権喪失時の実画面停止、終了・再起動からの復帰の実ブラウザE2E検証。
 
 タスク4の完了は保存層の自動テストで判定し、画面接続・実ブラウザ検証は各後続タスクの完了条件に含める。
+
+
+## 保存・復旧仕様と自動テストの対応
+
+| 仕様 | 保存層の検証 | 関連する既存ロジックテスト |
+| --- | --- | --- |
+| S01 | `game.test.ts`: 戦闘前保存失敗・同候補再試行後の開始 | `progression.test.ts`: 遭遇検証 |
+| S02 | `save-contracts.test.ts`: 遭遇確認・戦闘・敗北から別Storeを生成し再読込、親分岐・未討伐・新しい戦闘初期状態を復元 | `engine.test.ts`: 戦闘初期化・再試行 |
+| S03 | `game.test.ts`: ボス報酬保存の再試行で予算4・floor-02解放、討伐1件 | `progression.test.ts`: 勝利候補・報酬導出 |
+| S04 | `save-contracts.test.ts`: 守護者勝利後の再読込で遺物1個・討伐部屋 | `progression.test.ts`: 守護者報酬・非再出現 |
+| S05 | `save-contracts.test.ts`: 未保存／実際に確定済みのエラーから別Storeで再読込 | `game.test.ts`: 書込後の成否不明エラーの照合 |
+| S06 | `save-contracts.test.ts`: 非所有Storeの変更拒否・古い戦闘結果の競合・戦闘停止 | `game.test.ts`: 直列化と競合・所有権喪失 |
+| S07 | `game.test.ts`: 未来版のロード・復元・新規開始拒否、原本書出し | `progression/recovery.test.ts`: 未知ID・進行不整合の拒否 |
+| S08 | `save-contracts.test.ts`: 確認前の原本保持・現編成全解除・旧プリセット保持と呼出拒否 | `party/recovery.test.ts`: 個人予算超過・他人不変・プリセット修復拒否 |
+| S09 | `save-contracts.test.ts`: 最終勝利後の再読込でクリア・guild・endingHandled=false、報酬再付与拒否 | `progression.test.ts`: 最終報酬・終了状態 |
+| S10 | `save-contracts.test.ts`: スキップ保存失敗後の再試行／取消、討伐と復帰先維持 | `progression/recovery.test.ts`: 結末フラグの復旧 |
+| S11 | `game.test.ts`: 新規開始の容量不足で旧包不変、同候補再試行 | `game.test.ts`: 初回開始・新saveId |
+| S12 | `save-contracts.test.ts`: 戦闘中の設定保存後の同編成リトライで最新設定・revision保持 | `game.test.ts`: 逃走時も最新設定保持 |
+
+保存層テストではfake-indexeddb上のセーブを別のStoreへ読み直して再起動を模擬する。勝利・敗北は終了結果を注入し、勝敗判定自体は戦闘エンジンのテストが担当する。Web Locks APIの実排他、画面操作、ブラウザ終了そのものは7.2のE2E対象のままとする。
