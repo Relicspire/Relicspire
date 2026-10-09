@@ -322,3 +322,5 @@ export function getBattleOutcome<T>(
 export function getDebugSnapshot<T>(session: BattleSession<T>) {
   return structuredClone({ state: session.state, log: session.log });
 }
+
+export * from './queries';

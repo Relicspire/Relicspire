@@ -217,6 +217,7 @@ describe('戦闘初期化と純粋なコマンドAPI', () => {
     });
     expect(checkCommand(s, command('knight-a2', null))).toEqual({
       ok: false,
+      code: 'cooldown',
       reason: 'Skill is on cooldown',
     });
     actor(s).cooldowns[0]!.timer = { kind: 'running', at: 100 };

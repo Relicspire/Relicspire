@@ -415,21 +415,33 @@ export class Engine {
       actor.timeStopUntil !== null ||
       this.inputActor()?.id !== actor.id
     )
-      return { ok: false, reason: 'Actor is not awaiting input' };
+      return {
+        ok: false,
+        code: 'not-awaiting-input',
+        reason: 'Actor is not awaiting input',
+      };
     let skill: SkillDefinition;
     try {
       skill = this.skill(command.skillId);
     } catch {
-      return { ok: false, reason: 'Unknown skill' };
+      return { ok: false, code: 'unknown-skill', reason: 'Unknown skill' };
     }
     if (skill.id !== 'basic-attack' && skill.id !== 'wait') {
       if (
         !actor.learnedSkills.some((id) => id === skill.id) ||
         !skill.id.startsWith(`${actor.jobId}-`)
       )
-        return { ok: false, reason: 'Skill is not learned by this job' };
+        return {
+          ok: false,
+          code: 'not-learned',
+          reason: 'Skill is not learned by this job',
+        };
       if (!getActiveSkillIds(this.content, actor).includes(skill.id))
-        return { ok: false, reason: 'Skill has been replaced' };
+        return {
+          ok: false,
+          code: 'replaced',
+          reason: 'Skill has been replaced',
+        };
     }
     const cooldown = actor.cooldowns.find((c) => c.id === skill.cooldownId);
     if (
@@ -438,22 +450,30 @@ export class Engine {
         ? cooldown.timer.remaining > 0
         : cooldown.timer.at > this.state.now)
     )
-      return { ok: false, reason: 'Skill is on cooldown' };
+      return { ok: false, code: 'cooldown', reason: 'Skill is on cooldown' };
     if (
       skill.elementChoices.length
         ? !skill.elementChoices.some((e) => e === command.chosenElement)
         : command.chosenElement !== null
     )
-      return { ok: false, reason: 'Invalid element choice' };
+      return {
+        ok: false,
+        code: 'invalid-element',
+        reason: 'Invalid element choice',
+      };
     if (['self', 'ally-all', 'enemy-all'].includes(skill.target)) {
       if (command.selectedTargetId !== null)
-        return { ok: false, reason: 'This skill does not select a target' };
+        return {
+          ok: false,
+          code: 'unexpected-target',
+          reason: 'This skill does not select a target',
+        };
     } else {
       const target = this.state.participants.find(
         (p) => p.id === command.selectedTargetId,
       );
       if (!target || !this.eligible(actor, target, skill.target))
-        return { ok: false, reason: 'Invalid target' };
+        return { ok: false, code: 'invalid-target', reason: 'Invalid target' };
     }
     return { ok: true };
   }

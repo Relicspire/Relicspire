@@ -75,7 +75,18 @@ export interface BattleSession<T = null> {
   preBattle: T;
 }
 /** コマンド使用可否。拒否理由を返し、状態は更新しない。 */
-export type CommandCheck = { ok: true } | { ok: false; reason: string };
+export type CommandRejectionCode =
+  | 'not-awaiting-input'
+  | 'unknown-skill'
+  | 'not-learned'
+  | 'replaced'
+  | 'cooldown'
+  | 'invalid-element'
+  | 'unexpected-target'
+  | 'invalid-target';
+/** 表示文言と独立した拒否コードと、従来のデバッグ理由。 */
+export type CommandCheck =
+  { ok: true } | { ok: false; code: CommandRejectionCode; reason: string };
 /** 予約内容に入力者のキャラクターIDを加えたプレイヤーコマンド。 */
 export interface PlayerCommand extends CommandReservation {
   actorId: CharacterId;
@@ -83,7 +94,12 @@ export interface PlayerCommand extends CommandReservation {
 /** 確定成功なら更新セッション、不正入力なら理由と元セッションを返す。 */
 export type CommandResult<T> =
   | { ok: true; session: BattleSession<T> }
-  | { ok: false; reason: string; session: BattleSession<T> };
+  | {
+      ok: false;
+      code: CommandRejectionCode;
+      reason: string;
+      session: BattleSession<T>;
+    };
 /** 敵の現在の予告情報。詠唱中は予約を保持し、停止中は凍結残りTUを示す。 */
 export interface EnemyForecast {
   enemyId: EnemyId;
