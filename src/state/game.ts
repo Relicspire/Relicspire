@@ -215,6 +215,7 @@ export function createGameState(
     }
   }
   return {
+    release,
     progression,
     settings,
     formation,

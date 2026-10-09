@@ -3,6 +3,8 @@ import { useStore } from 'zustand';
 import type { GameState } from '../state/game';
 import { SavePanel } from './SavePanel';
 import { SettingsPanel } from './SettingsPanel';
+import { Guild } from '../features/guild/Guild';
+import { returnToGuild } from '../game/progression';
 
 export function App({
   game,
@@ -58,6 +60,7 @@ function GameShell({
   const status = useStore(game.status);
   const settings = useStore(game.settings).value;
   const progression = useStore(game.progression).value;
+  const formation = useStore(game.formation).value;
   const [page, setPage] = useState<'home' | 'settings' | 'save'>('home');
   const [dirty, setDirty] = useState(false);
   const [paused, setPaused] = useState(document.visibilityState === 'hidden');
@@ -186,22 +189,63 @@ function GameShell({
         />
       ) : (
         <>
-          {page === 'home' && progression && (
-            <section>
-              <h2>
-                {progression.location.kind === 'guild'
-                  ? '迷宮ギルド'
-                  : '探索の再開'}
-              </h2>
-              <p>
-                保存した現在地：
-                {progression.location.kind === 'guild'
-                  ? '拠点'
-                  : `${progression.location.floorId} / ${progression.location.nodeId}`}
-              </p>
-              <p>編成・探索・バトル画面は後続のMVPタスクで接続します。</p>
-            </section>
-          )}
+          {page === 'home' &&
+            progression &&
+            (progression.location.kind === 'guild' && formation ? (
+              <Guild
+                key={JSON.stringify(formation)}
+                game={game}
+                disabled={blocked}
+                onDirty={setDirty}
+              />
+            ) : (
+              <section>
+                <h2>
+                  {progression.location.kind === 'guild'
+                    ? '迷宮ギルド'
+                    : '探索の再開'}
+                </h2>
+                <p>
+                  保存した現在地：
+                  {progression.location.kind === 'guild'
+                    ? '拠点'
+                    : `${progression.location.floorId} / ${progression.location.nodeId}`}
+                </p>
+                <p>探索・バトル画面は後続のMVPタスクで接続します。</p>
+                <button
+                  disabled={blocked || !!game.battle.getState().session}
+                  onClick={() =>
+                    void (async () => {
+                      const data = game.snapshot();
+                      if (!data || blocked || game.battle.getState().session)
+                        return;
+                      const candidate = returnToGuild(
+                        game.release,
+                        data.progression,
+                      );
+                      if (!candidate.ok) {
+                        setNotice(
+                          candidate.issues
+                            .map((issue) => issue.message)
+                            .join(' ／ '),
+                        );
+                        return;
+                      }
+                      try {
+                        await game.update({
+                          ...data,
+                          progression: candidate.value.progression,
+                        });
+                      } catch (error) {
+                        setNotice(String(error));
+                      }
+                    })()
+                  }
+                >
+                  拠点へ帰還
+                </button>
+              </section>
+            ))}
           <SavePanel
             game={game}
             recheck={recheck}

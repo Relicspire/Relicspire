@@ -174,3 +174,116 @@ pre {
     scroll-behavior: auto !important;
   }
 }
+
+.guild {
+  overflow: hidden;
+  padding: 0;
+}
+.guild > :not(.guild-banner) {
+  margin: 20px clamp(16px, 3vw, 28px);
+}
+.guild-banner {
+  padding: 32px clamp(16px, 3vw, 28px);
+  background:
+    radial-gradient(ellipse at top right, #52604655, transparent 70%),
+    linear-gradient(135deg, #302b24, #172332);
+  border-bottom: 1px solid #685738;
+}
+.guild h3 {
+  font-weight: 700;
+  font-size: 1.125rem;
+  margin-block: 16px;
+}
+.guild h4 {
+  font-weight: 700;
+  font-size: 1rem;
+}
+.guild input:not([type='checkbox']):not([type='range']) {
+  background: #080e19;
+  border: 1px solid #64748b;
+  border-radius: 8px;
+  min-height: 44px;
+  padding: 8px;
+  max-width: 100%;
+}
+.guild label {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.guild select {
+  max-width: 100%;
+}
+.guild-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.party-grid,
+.inventory-grid,
+.skill-routes {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+.build-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.build-stats div {
+  background: #080e19;
+  padding: 12px;
+  border-radius: 8px;
+}
+.build-stats dt {
+  color: #b7c4d7;
+  font-size: 0.875rem;
+}
+.build-stats dd {
+  font-size: 1.25rem;
+}
+.skill-card,
+.preset-card,
+.floor-card,
+.inventory-grid article {
+  border: 1px solid #475569;
+  border-radius: 12px;
+  padding: 16px;
+  margin-block: 16px;
+  overflow-wrap: anywhere;
+}
+.guild [aria-pressed='true'] {
+  border-color: #e5ca94;
+  background: #413827;
+}
+.guild ol,
+.guild ul {
+  padding-left: 24px;
+  list-style: revert;
+}
+.equipment-slots {
+  padding: 0 !important;
+  list-style: none !important;
+}
+.equipment-slots li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 12px;
+}
+.equipment-slots li > button:first-child {
+  flex: 1;
+  text-align: left;
+}
+summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding-block: 8px;
+  color: #e5ca94;
+}
+.skill-card button {
+  margin-top: 12px;
+}
