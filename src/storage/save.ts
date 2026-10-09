@@ -76,7 +76,18 @@ export class SaveRepository {
 /** lock callbackが終了するまで所有権を保持する。非表示では解放しない。 */
 export class SaveOwnership {
   owned = false;
+  private listeners = new Set<() => void>();
+  subscribe(listener: () => void) {
+    this.listeners.add(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+  private changed() {
+    this.listeners.forEach((listener) => listener());
+  }
   private releaseLock: (() => void) | undefined;
+  private generation = 0;
   async acquire(
     locks: LockManager | undefined = navigator.locks,
   ): Promise<boolean> {
@@ -93,18 +104,25 @@ export class SaveOwnership {
               return;
             }
             this.owned = true;
+            const generation = ++this.generation;
+            this.changed();
             await new Promise<void>((release) => {
               this.releaseLock = release;
               resolve(true);
             });
-            this.owned = false;
+            if (generation === this.generation) {
+              this.owned = false;
+              this.changed();
+            }
           },
         )
         .catch(reject);
     });
   }
   release() {
+    this.generation++;
     this.owned = false;
+    this.changed();
     this.releaseLock?.();
     this.releaseLock = undefined;
   }

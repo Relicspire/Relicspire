@@ -10,7 +10,7 @@
 
 ## 起動時の接続
 
-正式なGameReleaseを作成後、次の順で接続する。現状のアプリは開発中タイトルであり、合成テストデータをゲームとして起動しない。
+`src/app/runtime.ts` と `main.tsx` が以下の起動経路を実装する。正式な `src/content/release.json` とタスク8の配信準備がない場合は準備待ちを表示し、合成テストデータをゲームとして起動しない。詳細は[共通UI](./common-ui.md)を参照。
 
 1. `SaveOwnership.acquire()` でWeb Locks所有権取得を試みる。
 2. `new SaveRepository(buildId, () => ownership.owned)` を作る。

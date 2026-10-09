@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { useStore } from 'zustand';
 import type { GameState } from '../state/game';
+import { Dialog } from './Dialog';
 
 /** 保存管理器に接続する復旧画面。起動・所有権の再取得は呼出元が担当する。 */
 export function SavePanel({
   game,
   recheck,
+  writesEnabled = true,
 }: {
   game: GameState;
   recheck: () => Promise<void>;
+  writesEnabled?: boolean;
 }) {
   const state = useStore(game.status);
   const [error, setError] = useState('');
@@ -35,62 +38,84 @@ export function SavePanel({
     URL.revokeObjectURL(url);
   };
   const previous = game.previousInspection();
+  const future = game.isFutureSave();
+  const busy = state.value === 'saving' || state.value === 'loading';
+  const writable = writesEnabled && !future && state.value !== 'readonly';
   return (
     <section aria-label="セーブ管理" className="space-y-4 p-6 text-slate-100">
       <h2>セーブ管理</h2>
-      <p role="status">
-        {state.value === 'saving'
-          ? '保存中…操作をお待ちください'
-          : state.value === 'loading'
-            ? '読み込み中…'
-            : state.value === 'readonly'
-              ? '読取専用：別のタブでプレイ中、または保存機能が利用できません'
-              : state.value === 'ready'
-                ? '保存済み'
-                : state.message}
-      </p>
-      {error && <p role="alert">{error}</p>}
-      {state.changes.length > 0 && (
-        <>
-          <ul>
-            {state.changes.map((change, i) => (
-              <li key={i}>{change}</li>
-            ))}
-          </ul>
-          <button onClick={() => void run(game.repair)}>
-            差分を確認して修復・移行を保存
-          </button>
-        </>
+      {future && (
+        <p role="alert">
+          このセーブは新版のものです。対応する新版アプリで開いてください。新規開始・復元を含む上書きはできません。
+        </p>
       )}
-      {state.value === 'empty' && (
-        <button onClick={() => void run(game.newGame)}>冒険を始める</button>
-      )}
-      {state.value === 'error' && (
-        <>
-          <button onClick={() => void run(game.retry)}>保存を再試行</button>
-          <button onClick={() => setConfirm('cancel')}>
-            変更・未保存の勝利を取り消す
-          </button>
-        </>
-      )}
-      {['error', 'readonly'].includes(state.value) && (
-        <button onClick={() => void run(recheck)}>再確認・読み直し</button>
-      )}
-      {['recovery', 'ready', 'error', 'readonly'].includes(state.value) && (
-        <button onClick={download}>current／previousをJSON書き出し</button>
-      )}
-      {['recovery', 'ready'].includes(state.value) && (
-        <>
-          <button onClick={() => setConfirm('new')}>新規開始</button>
-          {previous.candidate && !previous.future && (
-            <button onClick={() => setConfirm('previous')}>
-              直前のセーブへ復元
+      <fieldset disabled={busy}>
+        <legend className="sr-only">セーブ操作</legend>
+        <p role="status">
+          {state.value === 'saving'
+            ? '保存中…操作をお待ちください'
+            : state.value === 'loading'
+              ? '読み込み中…'
+              : state.value === 'readonly'
+                ? '読取専用：別のタブでプレイ中、または保存機能が利用できません'
+                : state.value === 'ready'
+                  ? '保存済み'
+                  : state.message}
+        </p>
+        {error && <p role="alert">{error}</p>}
+        {state.changes.length > 0 && writable && (
+          <>
+            <ul>
+              {state.changes.map((change, i) => (
+                <li key={i}>{change}</li>
+              ))}
+            </ul>
+            <button onClick={() => void run(game.repair)}>
+              差分を確認して修復・移行を保存
             </button>
+          </>
+        )}
+        {state.value === 'empty' && (
+          <button disabled={!writable} onClick={() => void run(game.newGame)}>
+            冒険を始める
+          </button>
+        )}
+        {state.value === 'error' && game.hasPendingSave() && (
+          <>
+            <button disabled={!writable} onClick={() => void run(game.retry)}>
+              保存を再試行
+            </button>
+            <button disabled={!writable} onClick={() => setConfirm('cancel')}>
+              変更・未保存の勝利を取り消す
+            </button>
+          </>
+        )}
+        {['error', 'readonly', 'recovery'].includes(state.value) &&
+          !game.hasPendingSave() && (
+            <button onClick={() => void run(recheck)}>再確認・読み直し</button>
           )}
-        </>
-      )}
+        {['recovery', 'ready', 'error', 'readonly'].includes(state.value) && (
+          <button onClick={download}>current／previousをJSON書き出し</button>
+        )}
+        {['recovery', 'ready'].includes(state.value) && writable && (
+          <>
+            <button onClick={() => setConfirm('new')}>新規開始</button>
+            {previous.candidate && !previous.future && (
+              <button onClick={() => setConfirm('previous')}>
+                直前のセーブへ復元
+              </button>
+            )}
+          </>
+        )}
+      </fieldset>
       {confirm && (
-        <div role="alertdialog" aria-label="保存変更の確認">
+        <Dialog
+          title="保存変更の確認"
+          onClose={() => {
+            if (!busy) setConfirm(null);
+          }}
+        >
+          {error && <p role="alert">{error}</p>}
           <p>
             {confirm === 'new'
               ? '現在の進行とプリセットを上書きして新規開始します。元データを書き出してから確定できます。'
@@ -104,6 +129,7 @@ export function SavePanel({
             </pre>
           )}
           <button
+            disabled={busy || !writable}
             onClick={() =>
               void run(
                 confirm === 'new'
@@ -116,8 +142,10 @@ export function SavePanel({
           >
             確定
           </button>
-          <button onClick={() => setConfirm(null)}>戻る</button>
-        </div>
+          <button disabled={busy} onClick={() => setConfirm(null)}>
+            戻る
+          </button>
+        </Dialog>
       )}
     </section>
   );

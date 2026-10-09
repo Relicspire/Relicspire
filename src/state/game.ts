@@ -25,6 +25,7 @@ import {
   migrateSave,
   SCHEMA_VERSION,
   type SaveData,
+  type Settings,
 } from './save-model';
 
 export type SaveStatus =
@@ -36,6 +37,9 @@ export function createGameState(
   owns: () => boolean,
 ) {
   const progression = createStore<{ value: Progression | null }>(() => ({
+    value: null,
+  }));
+  const settings = createStore<{ value: Settings | null }>(() => ({
     value: null,
   }));
   const formation = createStore<{ value: FormationState | null }>(() => ({
@@ -61,6 +65,7 @@ export function createGameState(
   let future = false;
   const publish = (data: SaveData) => {
     committed = structuredClone(data);
+    settings.setState({ value: structuredClone(data.settings) });
     progression.setState({ value: structuredClone(data.progression) });
     formation.setState({
       value: {
@@ -104,10 +109,15 @@ export function createGameState(
       publish(pending.current.data);
       pending = null;
       await persisted.persist.rehydrate();
-      status.setState({ value: 'ready', message: '', changes: [] });
+      status.setState({
+        value: owns() ? 'ready' : 'readonly',
+        message: '',
+        changes: [],
+      });
       const next = afterSave;
       afterSave = null;
-      next?.();
+      if (owns()) next?.();
+      else battle.setState({ session: null, before: null });
     } catch (error) {
       await persisted.persist.rehydrate();
       const conflict = error instanceof SaveConflict || !owns();
@@ -157,6 +167,7 @@ export function createGameState(
     await flush();
   }
   async function load() {
+    status.setState({ value: 'loading', message: '', changes: [] });
     pending = null;
     afterSave = null;
     committed = null;
@@ -167,6 +178,7 @@ export function createGameState(
     exploration.setState({ encounter: null });
     progression.setState({ value: null });
     formation.setState({ value: null });
+    settings.setState({ value: null });
     status.setState({ value: 'loading', message: '', changes: [] });
     try {
       raw = await repository.read();
@@ -204,16 +216,29 @@ export function createGameState(
   }
   return {
     progression,
+    settings,
     formation,
     exploration,
     battle,
     status,
     persisted,
     load,
+    snapshot: () => (committed ? structuredClone(committed) : null),
+    hasPendingSave: () => pending !== null,
+    isFutureSave: () => future,
+    stopForOwnershipLoss() {
+      battle.setState({ session: null, before: null });
+      exploration.setState({ encounter: null });
+      status.setState({
+        value: 'readonly',
+        message:
+          '所有権を失いました。再確認して最新のセーブを読み込んでください。',
+      });
+    },
     exportRaw: () => JSON.stringify(raw ?? null, null, 2),
     async newGame() {
       await save(
-        initialSave(release, committed?.settings),
+        initialSave(release, committed?.settings ?? recovery?.settings),
         () => {
           battle.setState({ session: null, before: null });
         },
