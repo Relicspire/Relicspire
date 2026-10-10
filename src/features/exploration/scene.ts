@@ -16,6 +16,10 @@ export function createExplorationScene(
   let elapsed = 1;
   let enemy = false;
   let paths = 1;
+  let cue: 'damage' | 'heal' | 'break' | 'death' | 'status' | 'command' | null =
+    null;
+  let cueToken = 0;
+  let shake = false;
   const graphics = new Graphics();
   const draw = () => {
     const w = app.screen.width;
@@ -25,6 +29,11 @@ export function createExplorationScene(
     const right = w - left;
     const top = h * (0.28 - pulse);
     const bottom = h - top;
+    const wave =
+      motion && shake && cue === 'damage'
+        ? Math.sin(elapsed * Math.PI * 8) * (1 - elapsed) * 6
+        : 0;
+    graphics.position.set(wave, 0);
     graphics.clear().rect(0, 0, w, h).fill(0x101923);
     graphics.poly([0, 0, w, 0, right, top, left, top]).fill(0x26333b);
     graphics.poly([0, h, w, h, right, bottom, left, bottom]).fill(0x30363a);
@@ -54,6 +63,20 @@ export function createExplorationScene(
           h * 0.67,
         ])
         .fill(0x785637);
+    }
+    if (cue && elapsed < 1 && motion) {
+      const color = {
+        damage: 0xff7857,
+        heal: 0x83efb1,
+        break: 0xffd57b,
+        death: 0x151018,
+        status: 0xac9fff,
+        command: 0xffffff,
+      }[cue];
+      graphics.rect(0, 0, w, h).fill({ color, alpha: (1 - elapsed) * 0.22 });
+      graphics
+        .circle(w / 2, h / 2, 20 + elapsed * h * 0.35)
+        .stroke({ color, width: 3, alpha: 1 - elapsed });
     }
   };
   const lost = (event: Event) => {
@@ -115,13 +138,23 @@ export function createExplorationScene(
       enemy: boolean;
       paths: number;
       moved: boolean;
+      cue?: typeof cue;
+      cueToken?: number;
+      shake?: boolean;
     }) {
       paused = next.paused;
       motion = !next.reducedMotion;
       speed = next.speed;
       enemy = next.enemy;
       paths = next.paths;
-      if (next.moved) elapsed = 0;
+      shake = next.shake ?? false;
+      cue = next.cue ?? null;
+      if (
+        next.moved ||
+        (next.cueToken !== undefined && next.cueToken !== cueToken)
+      )
+        elapsed = 0;
+      cueToken = next.cueToken ?? 0;
       if (!initialized || disposed || failed) return;
       draw();
       app.render();

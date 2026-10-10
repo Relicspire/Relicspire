@@ -94,6 +94,8 @@ describe('探索画面と保存', () => {
       name: '戦闘開始：名称 guardian-01-01',
     });
     expect(game.battle.getState().session).not.toBeNull();
+    click('逃走');
+    click('逃走を確定');
     click('探索へ戻る');
     await waitFor(() => expect(game.battle.getState().session).toBeNull());
     expect(game.snapshot()?.progression.location).toHaveProperty(

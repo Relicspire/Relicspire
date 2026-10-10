@@ -3,6 +3,7 @@ import { useStore } from 'zustand';
 import type { GameState } from '../../state/game';
 import type { NodeId } from '../../game/data/model';
 import { Dialog } from '../../app/Dialog';
+import { EnemyActions } from '../battle/BattleInfo';
 import { ExplorationView } from './ExplorationView';
 
 function roomName(id: NodeId) {
@@ -65,20 +66,7 @@ export function Exploration({
         speed={settings?.animationSpeed ?? 1}
       />
       {error && <p role="alert">{error}</p>}
-      {session ? (
-        <article>
-          <h3>戦闘開始：{name(encounter!.enemyId)}</h3>
-          <p>
-            戦闘前の保存が完了しました。戦闘のコマンド操作は現在準備中です。
-          </p>
-          <button
-            disabled={disabled}
-            onClick={() => void act(() => game.leaveBattle())}
-          >
-            探索へ戻る
-          </button>
-        </article>
-      ) : (
+      {!session && (
         <>
           <nav aria-label="経路選択">
             {node.links.map((id) => {
@@ -164,6 +152,7 @@ export function Exploration({
               .map((e) => ` / ${name(e.id)} × ${e.quantity}`)
               .join('')}
           </p>
+          <EnemyActions enemy={enemy} release={release} />
           <p>戦う場合は現在の編成と復帰先を保存してから開始します。</p>
           <button
             disabled={disabled}

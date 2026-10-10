@@ -14,6 +14,7 @@ export function SavePanel({
   writesEnabled?: boolean;
 }) {
   const state = useStore(game.status);
+  const battle = useStore(game.battle);
   const [error, setError] = useState('');
   const [confirm, setConfirm] = useState<'new' | 'previous' | 'cancel' | null>(
     null,
@@ -39,7 +40,10 @@ export function SavePanel({
   };
   const previous = game.previousInspection();
   const future = game.isFutureSave();
-  const busy = state.value === 'saving' || state.value === 'loading';
+  const busy =
+    state.value === 'saving' ||
+    state.value === 'loading' ||
+    battle.transitioning;
   const writable = writesEnabled && !future && state.value !== 'readonly';
   return (
     <section aria-label="セーブ管理" className="space-y-4 p-6 text-slate-100">
@@ -99,9 +103,17 @@ export function SavePanel({
         )}
         {['recovery', 'ready'].includes(state.value) && writable && (
           <>
-            <button onClick={() => setConfirm('new')}>新規開始</button>
+            <button
+              disabled={!!battle.session || !!battle.receipt}
+              onClick={() => setConfirm('new')}
+            >
+              新規開始
+            </button>
             {previous.candidate && !previous.future && (
-              <button onClick={() => setConfirm('previous')}>
+              <button
+                disabled={!!battle.session || !!battle.receipt}
+                onClick={() => setConfirm('previous')}
+              >
                 直前のセーブへ復元
               </button>
             )}

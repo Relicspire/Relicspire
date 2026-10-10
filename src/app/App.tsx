@@ -4,6 +4,7 @@ import type { GameState } from '../state/game';
 import { SavePanel } from './SavePanel';
 import { SettingsPanel } from './SettingsPanel';
 import { Guild } from '../features/guild/Guild';
+import { Battle } from '../features/battle/Battle';
 import { Exploration } from '../features/exploration/Exploration';
 
 export function App({
@@ -61,6 +62,7 @@ function GameShell({
   const settings = useStore(game.settings).value;
   const progression = useStore(game.progression).value;
   const formation = useStore(game.formation).value;
+  const battle = useStore(game.battle);
   const [page, setPage] = useState<'home' | 'settings' | 'save'>('home');
   const [dirty, setDirty] = useState(false);
   const [paused, setPaused] = useState(document.visibilityState === 'hidden');
@@ -70,7 +72,10 @@ function GameShell({
   useEffect(() => {
     window.history.pushState({ relicspire: true }, '', window.location.href);
   }, []);
-  const busy = status.value === 'saving' || status.value === 'loading';
+  const busy =
+    status.value === 'saving' ||
+    status.value === 'loading' ||
+    battle.transitioning;
   const blocked = busy || paused || status.value !== 'ready' || !deliveryReady;
   useEffect(() => {
     const visibility = () => {
@@ -123,6 +128,19 @@ function GameShell({
         setNotice('保存・編集を確定または取り消してから戻ってください。');
         return;
       }
+      if (
+        page === 'home' &&
+        game.battle.getState().session &&
+        game.status.getState().value === 'ready' &&
+        !paused
+      ) {
+        try {
+          game.requestBattleExit();
+        } catch (cause) {
+          setNotice(String(cause));
+        }
+        return;
+      }
       setPage('home');
     };
     window.addEventListener('keydown', back);
@@ -131,7 +149,7 @@ function GameShell({
       window.removeEventListener('keydown', back);
       window.removeEventListener('popstate', back);
     };
-  }, [busy, dirty, game]);
+  }, [busy, dirty, game, page, paused]);
   return (
     <>
       <p role="status" className="delivery-status">
@@ -191,7 +209,9 @@ function GameShell({
         <>
           {page === 'home' &&
             progression &&
-            (progression.location.kind === 'guild' && formation ? (
+            (battle.session || battle.receipt ? (
+              <Battle game={game} disabled={blocked} reducedMotion={reduced} />
+            ) : progression.location.kind === 'guild' && formation ? (
               <Guild
                 key={JSON.stringify(formation)}
                 game={game}

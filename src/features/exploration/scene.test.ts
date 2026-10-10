@@ -13,6 +13,7 @@ const mock = vi.hoisted(() => ({
 }));
 vi.mock('pixi.js', () => ({
   Graphics: class {
+    position = { set: vi.fn() };
     clear() {
       return this;
     }
@@ -92,6 +93,42 @@ describe('PixiJS描画のライフサイクル', () => {
     expect(app.start).not.toHaveBeenCalled();
     scene.destroy();
     expect(app.destroy).toHaveBeenCalledTimes(1);
+  });
+  it('戦闘の効果連番で演出を開始し、休止・演出省略ではTickerを止める', async () => {
+    const scene = createExplorationScene(
+      document.createElement('div'),
+      vi.fn(),
+    );
+    mock.resolve!();
+    await scene.ready;
+    const app = mock.apps.at(-1)!;
+    app.start.mockClear();
+    scene.update({
+      ...state,
+      moved: false,
+      cue: 'damage',
+      cueToken: 1,
+      shake: true,
+    });
+    expect(app.start).toHaveBeenCalledTimes(1);
+    scene.update({
+      ...state,
+      moved: false,
+      cue: 'damage',
+      cueToken: 1,
+      paused: true,
+    });
+    expect(app.stop).toHaveBeenCalled();
+    app.start.mockClear();
+    scene.update({
+      ...state,
+      moved: false,
+      cue: 'heal',
+      cueToken: 2,
+      reducedMotion: true,
+    });
+    expect(app.start).not.toHaveBeenCalled();
+    scene.destroy();
   });
   it('初期化失敗とWebGLコンテキスト喪失を通知し、喪失後に描画を再開しない', async () => {
     const failure = vi.fn();

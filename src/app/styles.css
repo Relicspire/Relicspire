@@ -307,3 +307,102 @@ summary {
   gap: 0.75rem;
   margin-block: 1rem;
 }
+
+.battle-participants,
+.command-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 175px), 1fr));
+  gap: 0.75rem;
+  margin-block: 1rem;
+}
+.battle-participants article,
+.command-grid > div,
+.command-selection {
+  padding: 0.85rem;
+  border: 1px solid #455261;
+  border-radius: 10px;
+  min-width: 0;
+}
+.battle .current-actor {
+  border-color: #d4b879;
+  background: #293445;
+}
+.battle progress {
+  width: 100%;
+  accent-color: #c5a964;
+}
+.battle details {
+  margin-block: 0.8rem;
+  overflow-wrap: anywhere;
+}
+.battle summary {
+  cursor: pointer;
+  padding-block: 0.7rem;
+}
+.battle select {
+  display: block;
+  width: 100%;
+  margin-block: 0.5rem;
+}
+.battle [aria-current='step'] {
+  border-left: 3px solid #d4b879;
+  padding-left: 0.5rem;
+}
+.timeline-scale {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.timeline-track {
+  position: relative;
+  margin-inline: 50px;
+  border-bottom: 2px solid #d4b879;
+}
+.timeline-marker {
+  position: absolute;
+  transform: translateX(-50%);
+  min-width: 92px;
+  padding: 0.4rem;
+  font-size: 0.78rem;
+}
+.enemy-marker {
+  border-color: #c28676;
+}
+.party-marker {
+  border-color: #90b6d0;
+}
+.battle-log {
+  max-height: 350px;
+  overflow: auto;
+}
+.battle-feedback {
+  border-left: 3px solid #c5a964;
+  padding-left: 0.8rem;
+  overflow-wrap: anywhere;
+}
+.prediction-details {
+  font-size: 0.9rem;
+}
+.battle .skill-info {
+  font-size: 0.9rem;
+}
+.battle button[aria-pressed='true'] {
+  border-color: #e5cb93;
+  background: #4c4534;
+}
+.timeline-marker {
+  width: 100px;
+  max-width: 100px;
+  white-space: normal;
+}
+.timeline-marker span {
+  display: block;
+}
+.timeline-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.status-badges {
+  color: #dfc68e;
+}

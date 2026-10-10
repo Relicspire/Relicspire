@@ -1,10 +1,21 @@
 import { createStore } from 'zustand/vanilla';
 import { persist, type PersistStorage } from 'zustand/middleware';
-import type { FloorId, NodeId } from '../game/data/model';
+import type {
+  BattleReward,
+  EnemyId,
+  FloorId,
+  NodeId,
+} from '../game/data/model';
 import type { GameRelease } from '../game/data/release-model';
 import { validateFormation, type FormationState } from '../game/party';
 import {
   createBattle,
+  submitCommand,
+  advanceBattle,
+  escapeBattle,
+  type PlayerCommand,
+  getBattleDelta,
+  type BattleDelta,
   getBattleOutcome,
   type BattleSession,
 } from '../game/battle';
@@ -62,12 +73,39 @@ export function createGameState(
   const battle = createStore<{
     session: BattleSession<SaveData> | null;
     before: SaveData | null;
-  }>(() => ({ session: null, before: null }));
+    receipt: { enemyId: EnemyId; reward: BattleReward } | null;
+    paused: boolean;
+    transitioning: boolean;
+    exitRequested: boolean;
+    feedback: BattleDelta | null;
+    changes: { now: number; id: string; hp: number; gauge: number | null }[];
+  }>(() => ({
+    session: null,
+    before: null,
+    receipt: null,
+    paused: false,
+    transitioning: false,
+    exitRequested: false,
+    feedback: null,
+    changes: [],
+  }));
   const status = createStore<{
     value: SaveStatus;
     message: string;
     changes: string[];
   }>(() => ({ value: 'loading', message: '', changes: [] }));
+  function clearBattle() {
+    battle.setState({
+      session: null,
+      before: null,
+      receipt: null,
+      paused: false,
+      transitioning: false,
+      exitRequested: false,
+      feedback: null,
+      changes: [],
+    });
+  }
   let raw: unknown;
   let committed: SaveData | null = null;
   let pending: SaveEnvelope<SaveData> | null = null;
@@ -128,7 +166,7 @@ export function createGameState(
       const next = afterSave;
       afterSave = null;
       if (owns()) next?.();
-      else battle.setState({ session: null, before: null });
+      else clearBattle();
     } catch (error) {
       await persisted.persist.rehydrate();
       const conflict = error instanceof SaveConflict || !owns();
@@ -136,7 +174,7 @@ export function createGameState(
         value: conflict ? 'readonly' : 'error',
         message: error instanceof Error ? error.message : '保存に失敗しました',
       });
-      if (conflict) battle.setState({ session: null, before: null });
+      if (conflict) clearBattle();
       throw error;
     }
   }
@@ -146,7 +184,7 @@ export function createGameState(
     newGame = false,
   ) {
     if (!owns()) {
-      battle.setState({ session: null, before: null });
+      clearBattle();
       status.setState({ value: 'readonly', message: '所有権を失いました' });
       throw new SaveConflict('所有権を失いました');
     }
@@ -176,6 +214,44 @@ export function createGameState(
     pending = { current: snapshot, previous: current ?? null };
     afterSave = next;
     await flush();
+  }
+  function activeBattle(
+    expected?: BattleSession<SaveData>,
+    allowPaused = false,
+  ) {
+    const session = battle.getState().session;
+    if (
+      !owns() ||
+      status.getState().value !== 'ready' ||
+      battle.getState().transitioning ||
+      (!allowPaused && battle.getState().paused) ||
+      !session ||
+      (expected && session !== expected)
+    )
+      throw new Error('現在は戦闘を操作できません');
+    return session;
+  }
+  function publishBattle(
+    before: BattleSession<SaveData>,
+    next: BattleSession<SaveData>,
+  ) {
+    const feedback = getBattleDelta(before, next);
+    const changes = feedback.participants
+      .filter(
+        (p) =>
+          p.hpChange !== 0 || (p.gaugeChange !== null && p.gaugeChange !== 0),
+      )
+      .map((p) => ({
+        now: next.state.now,
+        id: p.id,
+        hp: p.hpChange,
+        gauge: p.gaugeChange,
+      }));
+    battle.setState({
+      session: next,
+      feedback,
+      changes: [...battle.getState().changes, ...changes].slice(-200),
+    });
   }
   async function travel(result: ProgressionResult<ExplorationCandidate>) {
     if (
@@ -212,7 +288,7 @@ export function createGameState(
     recovery = null;
     future = false;
     await persisted.persist.rehydrate();
-    battle.setState({ session: null, before: null });
+    clearBattle();
     exploration.setState({ encounter: null, entryText: null });
     progression.setState({ value: null });
     formation.setState({ value: null });
@@ -266,7 +342,7 @@ export function createGameState(
     hasPendingSave: () => pending !== null,
     isFutureSave: () => future,
     stopForOwnershipLoss() {
-      battle.setState({ session: null, before: null });
+      clearBattle();
       exploration.setState({ encounter: null, entryText: null });
       status.setState({
         value: 'readonly',
@@ -279,7 +355,7 @@ export function createGameState(
       await save(
         initialSave(release, committed?.settings ?? recovery?.settings),
         () => {
-          battle.setState({ session: null, before: null });
+          clearBattle();
           exploration.setState({ encounter: null, entryText: null });
         },
         true,
@@ -315,7 +391,7 @@ export function createGameState(
         JSON.stringify(await repository.read()) !== JSON.stringify(raw) ||
         !owns()
       ) {
-        battle.setState({ session: null, before: null });
+        clearBattle();
         status.setState({
           value: 'readonly',
           message: '保存が更新されています',
@@ -324,10 +400,12 @@ export function createGameState(
       }
       pending = null;
       afterSave = null;
-      battle.setState({ session: null, before: null });
+      clearBattle();
+      exploration.setState({ encounter: null, entryText: null });
       status.setState({ value: committed ? 'ready' : 'empty', message: '' });
     },
     async update(data: SaveData) {
+      if (battle.getState().transitioning) throw new Error('戦闘の復元中です');
       if (
         battle.getState().session &&
         (JSON.stringify(data.party) !== JSON.stringify(committed?.party) ||
@@ -366,6 +444,42 @@ export function createGameState(
     dismissEntry() {
       exploration.setState({ entryText: null });
     },
+    command(command: PlayerCommand, expected: BattleSession<SaveData>) {
+      const result = submitCommand(activeBattle(expected), command, {
+        advance: false,
+      });
+      if (!result.ok)
+        throw new Error('コマンドの条件が変わりました。選び直してください。');
+      publishBattle(expected, result.session);
+    },
+    advance(expected: BattleSession<SaveData>) {
+      publishBattle(
+        expected,
+        advanceBattle(activeBattle(expected), { stopAfterUnit: true }),
+      );
+    },
+    escape(expected: BattleSession<SaveData>) {
+      battle.setState({ session: escapeBattle(activeBattle(expected, true)) });
+    },
+    requestBattleExit() {
+      const session = activeBattle(undefined, true);
+      if (session.state.result === 'victory')
+        throw new Error('勝利の保存を完了してください');
+      battle.setState({ paused: true, exitRequested: true });
+    },
+    continueBattle() {
+      activeBattle(undefined, true);
+      battle.setState({ paused: false, exitRequested: false });
+    },
+    pauseBattle(value: boolean) {
+      activeBattle(undefined, true);
+      battle.setState({ paused: value });
+    },
+    dismissBattleResult() {
+      if (!owns() || status.getState().value !== 'ready')
+        throw new Error('現在は結果を閉じられません');
+      battle.setState({ receipt: null });
+    },
     async startBattle(encounter: Encounter) {
       if (!committed || battle.getState().session)
         throw new Error('戦闘を開始できません');
@@ -393,7 +507,16 @@ export function createGameState(
         data,
       );
       await save(data, () => {
-        battle.setState({ before: data, session });
+        battle.setState({
+          before: data,
+          session,
+          receipt: null,
+          paused: false,
+          transitioning: false,
+          exitRequested: false,
+          feedback: null,
+          changes: [],
+        });
         exploration.setState({ encounter: structuredClone(encounter) });
       });
     },
@@ -408,27 +531,43 @@ export function createGameState(
         getBattleOutcome(session).result === 'victory'
       )
         throw new Error('勝利の保存を先に完了してください');
-      if (JSON.stringify(await repository.read()) !== JSON.stringify(raw)) {
-        battle.setState({ session: null, before: null });
-        status.setState({ value: 'readonly' });
-        throw new SaveConflict('保存が更新されています');
+      if (battle.getState().transitioning) throw new Error('戦闘の復元中です');
+      battle.setState({ transitioning: true });
+      try {
+        if (
+          JSON.stringify(await repository.read()) !== JSON.stringify(raw) ||
+          !owns() ||
+          status.getState().value !== 'ready'
+        ) {
+          clearBattle();
+          status.setState({ value: 'readonly' });
+          throw new SaveConflict('保存が更新されています');
+        }
+        publish({
+          ...committed,
+          party: before.party,
+          progression: before.progression,
+        });
+        clearBattle();
+        exploration.setState({ encounter: null, entryText: null });
+      } finally {
+        battle.setState({ transitioning: false });
       }
-      publish({
-        ...committed,
-        party: before.party,
-        progression: before.progression,
-      });
-      battle.setState({ session: null, before: null });
-      exploration.setState({ encounter: null, entryText: null });
     },
     async retryBattle() {
       const encounter = exploration.getState().encounter;
       if (!encounter) throw new Error('遭遇情報がありません');
       await this.leaveBattle();
-      if (!committed) throw new Error('開始前状態がありません');
+      if (!committed || !owns() || status.getState().value !== 'ready')
+        throw new Error('開始前状態がありません');
       const data = structuredClone(committed);
       battle.setState({
         before: data,
+        paused: false,
+        transitioning: false,
+        exitRequested: false,
+        feedback: null,
+        changes: [],
         session: createBattle(
           release.content,
           {
@@ -470,7 +609,14 @@ export function createGameState(
           progression: candidate.value.progression,
         },
         () => {
-          battle.setState({ session: null, before: null });
+          battle.setState({
+            session: null,
+            before: null,
+            receipt: {
+              enemyId: encounter.enemyId,
+              reward: candidate.value.reward,
+            },
+          });
           exploration.setState({ encounter: null, entryText: null });
         },
       );
