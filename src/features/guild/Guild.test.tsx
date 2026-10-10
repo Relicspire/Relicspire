@@ -304,6 +304,7 @@ describe('伝言板・階層ワープ', () => {
       floorId: 'floor-01',
       nodeId: 'floor-01-entry',
     });
+    click('探索を続ける');
     click('拠点へ帰還');
     await screen.findByRole('heading', { name: '迷宮ギルド' });
     expect(game.snapshot()?.progression.location).toEqual({ kind: 'guild' });

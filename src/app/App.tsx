@@ -4,7 +4,7 @@ import type { GameState } from '../state/game';
 import { SavePanel } from './SavePanel';
 import { SettingsPanel } from './SettingsPanel';
 import { Guild } from '../features/guild/Guild';
-import { returnToGuild } from '../game/progression';
+import { Exploration } from '../features/exploration/Exploration';
 
 export function App({
   game,
@@ -199,52 +199,11 @@ function GameShell({
                 onDirty={setDirty}
               />
             ) : (
-              <section>
-                <h2>
-                  {progression.location.kind === 'guild'
-                    ? '迷宮ギルド'
-                    : '探索の再開'}
-                </h2>
-                <p>
-                  保存した現在地：
-                  {progression.location.kind === 'guild'
-                    ? '拠点'
-                    : `${progression.location.floorId} / ${progression.location.nodeId}`}
-                </p>
-                <p>探索・バトル画面は後続のMVPタスクで接続します。</p>
-                <button
-                  disabled={blocked || !!game.battle.getState().session}
-                  onClick={() =>
-                    void (async () => {
-                      const data = game.snapshot();
-                      if (!data || blocked || game.battle.getState().session)
-                        return;
-                      const candidate = returnToGuild(
-                        game.release,
-                        data.progression,
-                      );
-                      if (!candidate.ok) {
-                        setNotice(
-                          candidate.issues
-                            .map((issue) => issue.message)
-                            .join(' ／ '),
-                        );
-                        return;
-                      }
-                      try {
-                        await game.update({
-                          ...data,
-                          progression: candidate.value.progression,
-                        });
-                      } catch (error) {
-                        setNotice(String(error));
-                      }
-                    })()
-                  }
-                >
-                  拠点へ帰還
-                </button>
-              </section>
+              <Exploration
+                game={game}
+                disabled={blocked}
+                reducedMotion={reduced}
+              />
             ))}
           <SavePanel
             game={game}

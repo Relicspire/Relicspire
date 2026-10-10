@@ -1,5 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import { persist, type PersistStorage } from 'zustand/middleware';
+import type { FloorId, NodeId } from '../game/data/model';
 import type { GameRelease } from '../game/data/release-model';
 import { validateFormation, type FormationState } from '../game/party';
 import {
@@ -9,9 +10,15 @@ import {
 } from '../game/battle';
 import {
   createVictoryCandidate,
+  selectNode,
+  warpToFloor,
+  returnToGuild,
+  moveToNextFloor,
   validateEncounter,
   type Encounter,
   type Progression,
+  type ExplorationCandidate,
+  type ProgressionResult,
 } from '../game/progression';
 import {
   SaveConflict,
@@ -45,8 +52,12 @@ export function createGameState(
   const formation = createStore<{ value: FormationState | null }>(() => ({
     value: null,
   }));
-  const exploration = createStore<{ encounter: Encounter | null }>(() => ({
+  const exploration = createStore<{
+    encounter: Encounter | null;
+    entryText: string | null;
+  }>(() => ({
     encounter: null,
+    entryText: null,
   }));
   const battle = createStore<{
     session: BattleSession<SaveData> | null;
@@ -166,6 +177,33 @@ export function createGameState(
     afterSave = next;
     await flush();
   }
+  async function travel(result: ProgressionResult<ExplorationCandidate>) {
+    if (
+      !committed ||
+      battle.getState().session ||
+      exploration.getState().encounter ||
+      status.getState().value !== 'ready' ||
+      !owns()
+    )
+      throw new Error('現在は移動できません');
+    if (!result.ok)
+      throw new Error(result.issues.map((i) => i.message).join(' ／ '));
+    const candidate = result.value;
+    if (candidate.encounter) {
+      exploration.setState({ encounter: candidate.encounter, entryText: null });
+      return;
+    }
+    await save({ ...committed, progression: candidate.progression }, () => {
+      const location = candidate.progression.location;
+      exploration.setState({
+        encounter: null,
+        entryText:
+          candidate.showEntryText && location.kind === 'floor'
+            ? release.presentation.floors[location.floorId]!.entryText
+            : null,
+      });
+    });
+  }
   async function load() {
     status.setState({ value: 'loading', message: '', changes: [] });
     pending = null;
@@ -175,7 +213,7 @@ export function createGameState(
     future = false;
     await persisted.persist.rehydrate();
     battle.setState({ session: null, before: null });
-    exploration.setState({ encounter: null });
+    exploration.setState({ encounter: null, entryText: null });
     progression.setState({ value: null });
     formation.setState({ value: null });
     settings.setState({ value: null });
@@ -229,7 +267,7 @@ export function createGameState(
     isFutureSave: () => future,
     stopForOwnershipLoss() {
       battle.setState({ session: null, before: null });
-      exploration.setState({ encounter: null });
+      exploration.setState({ encounter: null, entryText: null });
       status.setState({
         value: 'readonly',
         message:
@@ -242,6 +280,7 @@ export function createGameState(
         initialSave(release, committed?.settings ?? recovery?.settings),
         () => {
           battle.setState({ session: null, before: null });
+          exploration.setState({ encounter: null, entryText: null });
         },
         true,
       );
@@ -299,6 +338,34 @@ export function createGameState(
         throw new Error('戦闘中は設定だけ変更できます');
       await save(data);
     },
+    async move(nodeId: NodeId) {
+      if (!committed) throw new Error('保存済みの現在地がありません');
+      await travel(selectNode(release, committed.progression, nodeId));
+    },
+    async warp(floorId: FloorId) {
+      if (!committed) throw new Error('保存済みの現在地がありません');
+      await travel(warpToFloor(release, committed.progression, floorId));
+    },
+    async returnToGuild() {
+      if (!committed) throw new Error('保存済みの現在地がありません');
+      await travel(returnToGuild(release, committed.progression));
+    },
+    async nextFloor() {
+      if (!committed) throw new Error('保存済みの現在地がありません');
+      await travel(moveToNextFloor(release, committed.progression));
+    },
+    avoidEncounter() {
+      if (
+        status.getState().value !== 'ready' ||
+        !owns() ||
+        battle.getState().session
+      )
+        throw new Error('現在は回避できません');
+      exploration.setState({ encounter: null, entryText: null });
+    },
+    dismissEntry() {
+      exploration.setState({ entryText: null });
+    },
     async startBattle(encounter: Encounter) {
       if (!committed || battle.getState().session)
         throw new Error('戦闘を開始できません');
@@ -352,7 +419,7 @@ export function createGameState(
         progression: before.progression,
       });
       battle.setState({ session: null, before: null });
-      exploration.setState({ encounter: null });
+      exploration.setState({ encounter: null, entryText: null });
     },
     async retryBattle() {
       const encounter = exploration.getState().encounter;
@@ -404,7 +471,7 @@ export function createGameState(
         },
         () => {
           battle.setState({ session: null, before: null });
-          exploration.setState({ encounter: null });
+          exploration.setState({ encounter: null, entryText: null });
         },
       );
     },

@@ -13,7 +13,7 @@ import {
   type FormationResult,
   type FormationState,
 } from '../../game/party';
-import { deriveProgression, warpToFloor } from '../../game/progression';
+import { deriveProgression } from '../../game/progression';
 import { getContentAvailability } from '../../game/data/release';
 import type { GameState } from '../../state/game';
 import { Dialog } from '../../app/Dialog';
@@ -382,24 +382,8 @@ export function Guild({
                     void (async () => {
                       const latest = game.snapshot();
                       if (!latest || blocked || dirty) return;
-                      const candidate = warpToFloor(
-                        release,
-                        latest.progression,
-                        floor.id,
-                      );
-                      if (!candidate.ok) {
-                        setError(
-                          candidate.issues
-                            .map((issue) => issue.message)
-                            .join(' ／ '),
-                        );
-                        return;
-                      }
                       try {
-                        await game.update({
-                          ...latest,
-                          progression: candidate.value.progression,
-                        });
+                        await game.warp(floor.id);
                       } catch (cause) {
                         setError(String(cause));
                       }
