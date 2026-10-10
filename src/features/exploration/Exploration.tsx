@@ -1,17 +1,10 @@
 import { useState } from 'react';
 import { useStore } from 'zustand';
 import type { GameState } from '../../state/game';
-import type { NodeId } from '../../game/data/model';
 import { Dialog } from '../../app/Dialog';
 import { EnemyActions } from '../battle/BattleInfo';
 import { ExplorationView } from './ExplorationView';
 
-function roomName(id: NodeId) {
-  if (id.endsWith('-entry')) return '入口';
-  if (id.endsWith('-boss')) return '階層ボスの間';
-  if (id.includes('-alcove-')) return `守護者の間 ${id.slice(-1)}`;
-  return `分岐 ${id.slice(-1)}`;
-}
 export function Exploration({
   game,
   disabled,
@@ -46,7 +39,8 @@ export function Exploration({
       setError(cause instanceof Error ? cause.message : String(cause));
     }
   };
-  const blocked = disabled || !!encounter || !!session || !!entryText;
+  const blocked =
+    disabled || reading || !!encounter || !!session || !!entryText;
   const nextFloor = release.campaign.enemies.find(
     (e) => e.id === `boss-${floor.id.slice(-2)}`,
   )?.reward.unlockFloorId;
@@ -56,7 +50,11 @@ export function Exploration({
         第{Number(floor.id.slice(-2))}階層 · {text.theme}
       </p>
       <h2>探索の再開</h2>
-      <p aria-live="polite">現在地：{roomName(location.nodeId)}</p>
+      <p aria-live="polite">現在地：{name(location.nodeId)}</p>
+      {node.enemies.length > 0 &&
+        node.enemies.every((id) =>
+          progression.defeatedEnemyIds.includes(id),
+        ) && <p>討伐済み · この部屋の敵は再出現しません。</p>}
       <ExplorationView
         location={location.nodeId}
         enemy={!!enemy || !!session}
@@ -77,11 +75,31 @@ export function Exploration({
               return (
                 <button
                   key={id}
+                  aria-describedby={`path-direction-${id}`}
                   disabled={blocked}
                   onClick={() => void act(() => game.move(id))}
                 >
-                  {roomName(id)}
-                  {alive ? ` · ${name(alive)}` : ''}
+                  {name(id)}
+                  {alive
+                    ? ` · ${name(alive)}`
+                    : target.enemies.length
+                      ? ' · 討伐済み'
+                      : ''}
+                  <span
+                    id={`path-direction-${id}`}
+                    className="block text-sm"
+                    aria-hidden="true"
+                  >
+                    {id.endsWith('-alcove-1') || id.endsWith('-alcove-3')
+                      ? '左の枝'
+                      : id.endsWith('-alcove-2') || id.endsWith('-alcove-4')
+                        ? '右の枝'
+                        : id.endsWith('-alcove-5')
+                          ? '奥の枝'
+                          : node.links[0] === id && !node.id.endsWith('-entry')
+                            ? '戻る'
+                            : '進む'}
+                  </span>
                 </button>
               );
             })}
@@ -105,13 +123,19 @@ export function Exploration({
             拠点へ帰還
           </button>
           <button disabled={blocked} onClick={() => setReading(true)}>
-            入口の本文・攻略ヒントを読む
+            {location.nodeId.endsWith('-hall-3')
+              ? '予告碑・ボスの攻略ヒントを読む'
+              : '入口の本文・攻略ヒントを読む'}
           </button>
         </>
       )}
       {!disabled && (entryText || reading) && (
         <Dialog
-          title="迷宮の入口"
+          title={
+            reading && location.nodeId.endsWith('-hall-3')
+              ? `${name(`boss-${floor.id.slice(-2)}`)}の予告碑`
+              : '迷宮の入口'
+          }
           onClose={() => {
             if (disabled) return;
             game.dismissEntry();
@@ -141,6 +165,10 @@ export function Exploration({
           <p>{release.presentation.entries[enemy.id]?.description}</p>
           <p>
             HP {enemy.stats.maxHp} / ブレイクゲージ {enemy.maxBreakGauge}
+          </p>
+          <p>
+            ATK {enemy.stats.atk} / MAG {enemy.stats.mag} / DEF{' '}
+            {enemy.stats.def} / MDEF {enemy.stats.mdef} / SPD {enemy.stats.spd}
           </p>
           <p>
             弱点：{release.presentation.elements[enemy.weakness]} / 耐性：

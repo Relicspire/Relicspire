@@ -11,14 +11,15 @@ import { describe, expect, it, vi } from 'vitest';
 import { App } from './App';
 import { createGameState } from '../state/game';
 import { DEFAULT_SETTINGS } from '../state/save-model';
-import { releaseFixture } from '../game/data/release.fixtures.test-support';
+import input from '../content/release.json';
+import { parseGameRelease } from '../game/data/release';
 import { DELIVERY_KEY, SAVE_KEY, SaveRepository } from '../storage/save';
 
 async function setup(ready = true) {
   const store = createStore(`ui-${crypto.randomUUID()}`, 'state');
   const repository = new SaveRepository('ui-test', () => true, store);
   await set(DELIVERY_KEY, { buildId: 'ui-test' }, store);
-  const game = createGameState(releaseFixture(), repository, () => true);
+  const game = createGameState(parseGameRelease(input), repository, () => true);
   await game.load();
   if (ready) await game.newGame();
   return { game, repository, store };
@@ -200,5 +201,54 @@ describe('共通UIの起動と保存', () => {
     expect(
       screen.getByRole('button', { name: '再確認・読み直し' }),
     ).toBeEnabled();
+  });
+});
+
+describe('正式第1階層での復旧操作', () => {
+  it('S08: 予算超過の差分確認後にだけ本人のスキルを全解除して保存する', async () => {
+    const { game, repository, store } = await setup();
+    const raw = (await repository.read()) as {
+      current: { data: { party: { learnedSkills: string[] }[] } };
+    };
+    raw.current.data.party[0]!.learnedSkills.push('knight-a3');
+    await set(SAVE_KEY, raw, store);
+    await game.load();
+    show(game);
+    expect(
+      screen.getByRole('button', { name: '差分を確認して修復・移行を保存' }),
+    ).toBeEnabled();
+    expect(await repository.read()).toEqual(raw);
+    fireEvent.click(
+      screen.getByRole('button', { name: '差分を確認して修復・移行を保存' }),
+    );
+    await waitFor(() => expect(game.status.getState().value).toBe('ready'));
+    expect(game.snapshot()!.party[0].learnedSkills).toEqual([]);
+    expect(game.snapshot()!.party[1].learnedSkills).toEqual([
+      'wizard-a1',
+      'wizard-a2',
+    ]);
+  });
+  it('S11: 新規開始の保存失敗では旧セーブを保持し、同じ候補の再試行で開始する', async () => {
+    const { game, repository } = await setup();
+    show(game);
+    const before = await repository.read();
+    vi.spyOn(repository, 'write').mockRejectedValueOnce(new Error('容量不足'));
+    fireEvent.click(screen.getByRole('button', { name: '新規開始' }));
+    fireEvent.click(
+      within(screen.getByRole('alertdialog')).getByRole('button', {
+        name: '確定',
+      }),
+    );
+    await screen.findByRole('button', { name: '保存を再試行' });
+    expect(await repository.read()).toEqual(before);
+    fireEvent.click(
+      within(screen.getByRole('alertdialog')).getByRole('button', {
+        name: '戻る',
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: '保存を再試行' }));
+    await waitFor(() => expect(game.status.getState().value).toBe('ready'));
+    expect(await repository.read()).not.toEqual(before);
+    expect(game.snapshot()!.progression.defeatedEnemyIds).toEqual([]);
   });
 });

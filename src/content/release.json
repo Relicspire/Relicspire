@@ -1,0 +1,4266 @@
+{
+  "contentVersion": 1,
+  "campaign": {
+    "floors": [
+      {
+        "id": "floor-01"
+      },
+      {
+        "id": "floor-02"
+      },
+      {
+        "id": "floor-03"
+      },
+      {
+        "id": "floor-04"
+      },
+      {
+        "id": "floor-05"
+      },
+      {
+        "id": "floor-06"
+      },
+      {
+        "id": "floor-07"
+      },
+      {
+        "id": "floor-08"
+      },
+      {
+        "id": "floor-09"
+      },
+      {
+        "id": "floor-10"
+      }
+    ],
+    "enemies": [
+      {
+        "id": "boss-01",
+        "floorId": "floor-01",
+        "reward": {
+          "skillPointsPerCharacter": 1,
+          "equipment": [],
+          "unlockFloorId": "floor-02",
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-01-01",
+        "floorId": "floor-01",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-01-01",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-01-02",
+        "floorId": "floor-01",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-01-02",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-01-03",
+        "floorId": "floor-01",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-01-03",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-01-04",
+        "floorId": "floor-01",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-01-04",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-01-05",
+        "floorId": "floor-01",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-01-05",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "boss-02",
+        "floorId": "floor-02",
+        "reward": {
+          "skillPointsPerCharacter": 1,
+          "equipment": [],
+          "unlockFloorId": "floor-03",
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-02-01",
+        "floorId": "floor-02",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-02-01",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-02-02",
+        "floorId": "floor-02",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-02-02",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-02-03",
+        "floorId": "floor-02",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-02-03",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-02-04",
+        "floorId": "floor-02",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-02-04",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-02-05",
+        "floorId": "floor-02",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-02-05",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "boss-03",
+        "floorId": "floor-03",
+        "reward": {
+          "skillPointsPerCharacter": 1,
+          "equipment": [],
+          "unlockFloorId": "floor-04",
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-03-01",
+        "floorId": "floor-03",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-03-01",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-03-02",
+        "floorId": "floor-03",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-03-02",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-03-03",
+        "floorId": "floor-03",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-03-03",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-03-04",
+        "floorId": "floor-03",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-03-04",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-03-05",
+        "floorId": "floor-03",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-03-05",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "boss-04",
+        "floorId": "floor-04",
+        "reward": {
+          "skillPointsPerCharacter": 1,
+          "equipment": [],
+          "unlockFloorId": "floor-05",
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-04-01",
+        "floorId": "floor-04",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-04-01",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-04-02",
+        "floorId": "floor-04",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-04-02",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-04-03",
+        "floorId": "floor-04",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-04-03",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-04-04",
+        "floorId": "floor-04",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-04-04",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-04-05",
+        "floorId": "floor-04",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-04-05",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "boss-05",
+        "floorId": "floor-05",
+        "reward": {
+          "skillPointsPerCharacter": 1,
+          "equipment": [],
+          "unlockFloorId": "floor-06",
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-05-01",
+        "floorId": "floor-05",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-05-01",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-05-02",
+        "floorId": "floor-05",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-05-02",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-05-03",
+        "floorId": "floor-05",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-05-03",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-05-04",
+        "floorId": "floor-05",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-05-04",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-05-05",
+        "floorId": "floor-05",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-05-05",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "boss-06",
+        "floorId": "floor-06",
+        "reward": {
+          "skillPointsPerCharacter": 1,
+          "equipment": [],
+          "unlockFloorId": "floor-07",
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-06-01",
+        "floorId": "floor-06",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-06-01",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-06-02",
+        "floorId": "floor-06",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-06-02",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-06-03",
+        "floorId": "floor-06",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-06-03",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-06-04",
+        "floorId": "floor-06",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-06-04",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-06-05",
+        "floorId": "floor-06",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-06-05",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "boss-07",
+        "floorId": "floor-07",
+        "reward": {
+          "skillPointsPerCharacter": 1,
+          "equipment": [],
+          "unlockFloorId": "floor-08",
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-07-01",
+        "floorId": "floor-07",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-07-01",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-07-02",
+        "floorId": "floor-07",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-07-02",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-07-03",
+        "floorId": "floor-07",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-07-03",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-07-04",
+        "floorId": "floor-07",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-07-04",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-07-05",
+        "floorId": "floor-07",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-07-05",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "boss-08",
+        "floorId": "floor-08",
+        "reward": {
+          "skillPointsPerCharacter": 1,
+          "equipment": [],
+          "unlockFloorId": "floor-09",
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-08-01",
+        "floorId": "floor-08",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-08-01",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-08-02",
+        "floorId": "floor-08",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-08-02",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-08-03",
+        "floorId": "floor-08",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-08-03",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-08-04",
+        "floorId": "floor-08",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-08-04",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-08-05",
+        "floorId": "floor-08",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-08-05",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "boss-09",
+        "floorId": "floor-09",
+        "reward": {
+          "skillPointsPerCharacter": 1,
+          "equipment": [],
+          "unlockFloorId": "floor-10",
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-09-01",
+        "floorId": "floor-09",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-09-01",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-09-02",
+        "floorId": "floor-09",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-09-02",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-09-03",
+        "floorId": "floor-09",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-09-03",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-09-04",
+        "floorId": "floor-09",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-09-04",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-09-05",
+        "floorId": "floor-09",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-09-05",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "boss-10",
+        "floorId": "floor-10",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [],
+          "unlockFloorId": null,
+          "finalClear": true
+        }
+      },
+      {
+        "id": "guardian-10-01",
+        "floorId": "floor-10",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-10-01",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-10-02",
+        "floorId": "floor-10",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-10-02",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-10-03",
+        "floorId": "floor-10",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-10-03",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-10-04",
+        "floorId": "floor-10",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-10-04",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-10-05",
+        "floorId": "floor-10",
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-10-05",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      }
+    ],
+    "relics": [
+      {
+        "id": "relic-01-01",
+        "floorId": "floor-01",
+        "sourceEnemyId": "guardian-01-01",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-01-02",
+        "floorId": "floor-01",
+        "sourceEnemyId": "guardian-01-02",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-01-03",
+        "floorId": "floor-01",
+        "sourceEnemyId": "guardian-01-03",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-01-04",
+        "floorId": "floor-01",
+        "sourceEnemyId": "guardian-01-04",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-01-05",
+        "floorId": "floor-01",
+        "sourceEnemyId": "guardian-01-05",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-02-01",
+        "floorId": "floor-02",
+        "sourceEnemyId": "guardian-02-01",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-02-02",
+        "floorId": "floor-02",
+        "sourceEnemyId": "guardian-02-02",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-02-03",
+        "floorId": "floor-02",
+        "sourceEnemyId": "guardian-02-03",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-02-04",
+        "floorId": "floor-02",
+        "sourceEnemyId": "guardian-02-04",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-02-05",
+        "floorId": "floor-02",
+        "sourceEnemyId": "guardian-02-05",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-03-01",
+        "floorId": "floor-03",
+        "sourceEnemyId": "guardian-03-01",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-03-02",
+        "floorId": "floor-03",
+        "sourceEnemyId": "guardian-03-02",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-03-03",
+        "floorId": "floor-03",
+        "sourceEnemyId": "guardian-03-03",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-03-04",
+        "floorId": "floor-03",
+        "sourceEnemyId": "guardian-03-04",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-03-05",
+        "floorId": "floor-03",
+        "sourceEnemyId": "guardian-03-05",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-04-01",
+        "floorId": "floor-04",
+        "sourceEnemyId": "guardian-04-01",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-04-02",
+        "floorId": "floor-04",
+        "sourceEnemyId": "guardian-04-02",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-04-03",
+        "floorId": "floor-04",
+        "sourceEnemyId": "guardian-04-03",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-04-04",
+        "floorId": "floor-04",
+        "sourceEnemyId": "guardian-04-04",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-04-05",
+        "floorId": "floor-04",
+        "sourceEnemyId": "guardian-04-05",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-05-01",
+        "floorId": "floor-05",
+        "sourceEnemyId": "guardian-05-01",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-05-02",
+        "floorId": "floor-05",
+        "sourceEnemyId": "guardian-05-02",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-05-03",
+        "floorId": "floor-05",
+        "sourceEnemyId": "guardian-05-03",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-05-04",
+        "floorId": "floor-05",
+        "sourceEnemyId": "guardian-05-04",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-05-05",
+        "floorId": "floor-05",
+        "sourceEnemyId": "guardian-05-05",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-06-01",
+        "floorId": "floor-06",
+        "sourceEnemyId": "guardian-06-01",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-06-02",
+        "floorId": "floor-06",
+        "sourceEnemyId": "guardian-06-02",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-06-03",
+        "floorId": "floor-06",
+        "sourceEnemyId": "guardian-06-03",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-06-04",
+        "floorId": "floor-06",
+        "sourceEnemyId": "guardian-06-04",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-06-05",
+        "floorId": "floor-06",
+        "sourceEnemyId": "guardian-06-05",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-07-01",
+        "floorId": "floor-07",
+        "sourceEnemyId": "guardian-07-01",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-07-02",
+        "floorId": "floor-07",
+        "sourceEnemyId": "guardian-07-02",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-07-03",
+        "floorId": "floor-07",
+        "sourceEnemyId": "guardian-07-03",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-07-04",
+        "floorId": "floor-07",
+        "sourceEnemyId": "guardian-07-04",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-07-05",
+        "floorId": "floor-07",
+        "sourceEnemyId": "guardian-07-05",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-08-01",
+        "floorId": "floor-08",
+        "sourceEnemyId": "guardian-08-01",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-08-02",
+        "floorId": "floor-08",
+        "sourceEnemyId": "guardian-08-02",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-08-03",
+        "floorId": "floor-08",
+        "sourceEnemyId": "guardian-08-03",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-08-04",
+        "floorId": "floor-08",
+        "sourceEnemyId": "guardian-08-04",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-08-05",
+        "floorId": "floor-08",
+        "sourceEnemyId": "guardian-08-05",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-09-01",
+        "floorId": "floor-09",
+        "sourceEnemyId": "guardian-09-01",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-09-02",
+        "floorId": "floor-09",
+        "sourceEnemyId": "guardian-09-02",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-09-03",
+        "floorId": "floor-09",
+        "sourceEnemyId": "guardian-09-03",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-09-04",
+        "floorId": "floor-09",
+        "sourceEnemyId": "guardian-09-04",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-09-05",
+        "floorId": "floor-09",
+        "sourceEnemyId": "guardian-09-05",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-10-01",
+        "floorId": "floor-10",
+        "sourceEnemyId": "guardian-10-01",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-10-02",
+        "floorId": "floor-10",
+        "sourceEnemyId": "guardian-10-02",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-10-03",
+        "floorId": "floor-10",
+        "sourceEnemyId": "guardian-10-03",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-10-04",
+        "floorId": "floor-10",
+        "sourceEnemyId": "guardian-10-04",
+        "maxOwned": 1
+      },
+      {
+        "id": "relic-10-05",
+        "floorId": "floor-10",
+        "sourceEnemyId": "guardian-10-05",
+        "maxOwned": 1
+      }
+    ]
+  },
+  "scope": {
+    "playableFloorIds": ["floor-01"]
+  },
+  "content": {
+    "characters": [
+      {
+        "id": "party-1",
+        "baseStats": {
+          "maxHp": 300,
+          "atk": 40,
+          "mag": 40,
+          "def": 10,
+          "mdef": 10,
+          "spd": 100
+        },
+        "initialJob": "knight",
+        "initialSkills": ["knight-a1", "knight-a2"],
+        "initialEquipment": [
+          "starter-sword",
+          "starter-staff",
+          "starter-armor",
+          "starter-charm",
+          "starter-boots",
+          "starter-ring"
+        ]
+      },
+      {
+        "id": "party-2",
+        "baseStats": {
+          "maxHp": 300,
+          "atk": 40,
+          "mag": 40,
+          "def": 10,
+          "mdef": 10,
+          "spd": 100
+        },
+        "initialJob": "wizard",
+        "initialSkills": ["wizard-a1", "wizard-a2"],
+        "initialEquipment": [
+          "starter-sword",
+          "starter-staff",
+          "starter-armor",
+          "starter-charm",
+          "starter-boots",
+          "starter-ring"
+        ]
+      },
+      {
+        "id": "party-3",
+        "baseStats": {
+          "maxHp": 300,
+          "atk": 40,
+          "mag": 40,
+          "def": 10,
+          "mdef": 10,
+          "spd": 100
+        },
+        "initialJob": "cleric",
+        "initialSkills": ["cleric-a1", "cleric-a2"],
+        "initialEquipment": [
+          "starter-sword",
+          "starter-staff",
+          "starter-armor",
+          "starter-charm",
+          "starter-boots",
+          "starter-ring"
+        ]
+      }
+    ],
+    "jobs": [
+      {
+        "id": "knight",
+        "routes": {
+          "a": [
+            {
+              "id": "knight-a1",
+              "skillId": "knight-a1",
+              "cost": 1,
+              "rank": 1,
+              "prerequisites": [],
+              "replacementGroup": "knight-a"
+            },
+            {
+              "id": "knight-a2",
+              "skillId": "knight-a2",
+              "cost": 2,
+              "rank": 2,
+              "prerequisites": ["knight-a1"],
+              "replacementGroup": "knight-a"
+            },
+            {
+              "id": "knight-a3",
+              "skillId": "knight-a3",
+              "cost": 3,
+              "rank": 3,
+              "prerequisites": ["knight-a2"],
+              "replacementGroup": "knight-a3"
+            }
+          ],
+          "b": [
+            {
+              "id": "knight-b1",
+              "skillId": "knight-b1",
+              "cost": 1,
+              "rank": 1,
+              "prerequisites": [],
+              "replacementGroup": "knight-b"
+            },
+            {
+              "id": "knight-b2",
+              "skillId": "knight-b2",
+              "cost": 2,
+              "rank": 2,
+              "prerequisites": ["knight-b1"],
+              "replacementGroup": "knight-b"
+            },
+            {
+              "id": "knight-b3",
+              "skillId": "knight-b3",
+              "cost": 3,
+              "rank": 3,
+              "prerequisites": ["knight-b2"],
+              "replacementGroup": "knight-b3"
+            }
+          ]
+        }
+      },
+      {
+        "id": "wizard",
+        "routes": {
+          "a": [
+            {
+              "id": "wizard-a1",
+              "skillId": "wizard-a1",
+              "cost": 1,
+              "rank": 1,
+              "prerequisites": [],
+              "replacementGroup": "wizard-a"
+            },
+            {
+              "id": "wizard-a2",
+              "skillId": "wizard-a2",
+              "cost": 2,
+              "rank": 2,
+              "prerequisites": ["wizard-a1"],
+              "replacementGroup": "wizard-a"
+            },
+            {
+              "id": "wizard-a3",
+              "skillId": "wizard-a3",
+              "cost": 3,
+              "rank": 3,
+              "prerequisites": ["wizard-a2"],
+              "replacementGroup": "wizard-a3"
+            }
+          ],
+          "b": [
+            {
+              "id": "wizard-b1",
+              "skillId": "wizard-b1",
+              "cost": 1,
+              "rank": 1,
+              "prerequisites": [],
+              "replacementGroup": "wizard-b"
+            },
+            {
+              "id": "wizard-b2",
+              "skillId": "wizard-b2",
+              "cost": 2,
+              "rank": 2,
+              "prerequisites": ["wizard-b1"],
+              "replacementGroup": "wizard-b"
+            },
+            {
+              "id": "wizard-b3",
+              "skillId": "wizard-b3",
+              "cost": 3,
+              "rank": 3,
+              "prerequisites": ["wizard-b2"],
+              "replacementGroup": "wizard-b3"
+            }
+          ]
+        }
+      },
+      {
+        "id": "cleric",
+        "routes": {
+          "a": [
+            {
+              "id": "cleric-a1",
+              "skillId": "cleric-a1",
+              "cost": 1,
+              "rank": 1,
+              "prerequisites": [],
+              "replacementGroup": "cleric-a"
+            },
+            {
+              "id": "cleric-a2",
+              "skillId": "cleric-a2",
+              "cost": 2,
+              "rank": 2,
+              "prerequisites": ["cleric-a1"],
+              "replacementGroup": "cleric-a"
+            },
+            {
+              "id": "cleric-a3",
+              "skillId": "cleric-a3",
+              "cost": 3,
+              "rank": 3,
+              "prerequisites": ["cleric-a2"],
+              "replacementGroup": "cleric-a3"
+            }
+          ],
+          "b": [
+            {
+              "id": "cleric-b1",
+              "skillId": "cleric-b1",
+              "cost": 1,
+              "rank": 1,
+              "prerequisites": [],
+              "replacementGroup": "cleric-b"
+            },
+            {
+              "id": "cleric-b2",
+              "skillId": "cleric-b2",
+              "cost": 2,
+              "rank": 2,
+              "prerequisites": ["cleric-b1"],
+              "replacementGroup": "cleric-b"
+            },
+            {
+              "id": "cleric-b3",
+              "skillId": "cleric-b3",
+              "cost": 3,
+              "rank": 3,
+              "prerequisites": ["cleric-b2"],
+              "replacementGroup": "cleric-b3"
+            }
+          ]
+        }
+      },
+      {
+        "id": "thief",
+        "routes": {
+          "a": [
+            {
+              "id": "thief-a1",
+              "skillId": "thief-a1",
+              "cost": 1,
+              "rank": 1,
+              "prerequisites": [],
+              "replacementGroup": "thief-a"
+            },
+            {
+              "id": "thief-a2",
+              "skillId": "thief-a2",
+              "cost": 2,
+              "rank": 2,
+              "prerequisites": ["thief-a1"],
+              "replacementGroup": "thief-a"
+            },
+            {
+              "id": "thief-a3",
+              "skillId": "thief-a3",
+              "cost": 3,
+              "rank": 3,
+              "prerequisites": ["thief-a2"],
+              "replacementGroup": "thief-a3"
+            }
+          ],
+          "b": [
+            {
+              "id": "thief-b1",
+              "skillId": "thief-b1",
+              "cost": 1,
+              "rank": 1,
+              "prerequisites": [],
+              "replacementGroup": "thief-b"
+            },
+            {
+              "id": "thief-b2",
+              "skillId": "thief-b2",
+              "cost": 2,
+              "rank": 2,
+              "prerequisites": ["thief-b1"],
+              "replacementGroup": "thief-b"
+            },
+            {
+              "id": "thief-b3",
+              "skillId": "thief-b3",
+              "cost": 3,
+              "rank": 3,
+              "prerequisites": ["thief-b2"],
+              "replacementGroup": "thief-b3"
+            }
+          ]
+        }
+      },
+      {
+        "id": "ranger",
+        "routes": {
+          "a": [
+            {
+              "id": "ranger-a1",
+              "skillId": "ranger-a1",
+              "cost": 1,
+              "rank": 1,
+              "prerequisites": [],
+              "replacementGroup": "ranger-a"
+            },
+            {
+              "id": "ranger-a2",
+              "skillId": "ranger-a2",
+              "cost": 2,
+              "rank": 2,
+              "prerequisites": ["ranger-a1"],
+              "replacementGroup": "ranger-a"
+            },
+            {
+              "id": "ranger-a3",
+              "skillId": "ranger-a3",
+              "cost": 3,
+              "rank": 3,
+              "prerequisites": ["ranger-a2"],
+              "replacementGroup": "ranger-a3"
+            }
+          ],
+          "b": [
+            {
+              "id": "ranger-b1",
+              "skillId": "ranger-b1",
+              "cost": 1,
+              "rank": 1,
+              "prerequisites": [],
+              "replacementGroup": "ranger-b"
+            },
+            {
+              "id": "ranger-b2",
+              "skillId": "ranger-b2",
+              "cost": 2,
+              "rank": 2,
+              "prerequisites": ["ranger-b1"],
+              "replacementGroup": "ranger-b"
+            },
+            {
+              "id": "ranger-b3",
+              "skillId": "ranger-b3",
+              "cost": 3,
+              "rank": 3,
+              "prerequisites": ["ranger-b2"],
+              "replacementGroup": "ranger-b3"
+            }
+          ]
+        }
+      },
+      {
+        "id": "berserker",
+        "routes": {
+          "a": [
+            {
+              "id": "berserker-a1",
+              "skillId": "berserker-a1",
+              "cost": 1,
+              "rank": 1,
+              "prerequisites": [],
+              "replacementGroup": "berserker-a"
+            },
+            {
+              "id": "berserker-a2",
+              "skillId": "berserker-a2",
+              "cost": 2,
+              "rank": 2,
+              "prerequisites": ["berserker-a1"],
+              "replacementGroup": "berserker-a"
+            },
+            {
+              "id": "berserker-a3",
+              "skillId": "berserker-a3",
+              "cost": 3,
+              "rank": 3,
+              "prerequisites": ["berserker-a2"],
+              "replacementGroup": "berserker-a3"
+            }
+          ],
+          "b": [
+            {
+              "id": "berserker-b1",
+              "skillId": "berserker-b1",
+              "cost": 1,
+              "rank": 1,
+              "prerequisites": [],
+              "replacementGroup": "berserker-b"
+            },
+            {
+              "id": "berserker-b2",
+              "skillId": "berserker-b2",
+              "cost": 2,
+              "rank": 2,
+              "prerequisites": ["berserker-b1"],
+              "replacementGroup": "berserker-b"
+            },
+            {
+              "id": "berserker-b3",
+              "skillId": "berserker-b3",
+              "cost": 3,
+              "rank": 3,
+              "prerequisites": ["berserker-b2"],
+              "replacementGroup": "berserker-b3"
+            }
+          ]
+        }
+      },
+      {
+        "id": "time-mage",
+        "routes": {
+          "a": [
+            {
+              "id": "time-mage-a1",
+              "skillId": "time-mage-a1",
+              "cost": 1,
+              "rank": 1,
+              "prerequisites": [],
+              "replacementGroup": "time-mage-a"
+            },
+            {
+              "id": "time-mage-a2",
+              "skillId": "time-mage-a2",
+              "cost": 2,
+              "rank": 2,
+              "prerequisites": ["time-mage-a1"],
+              "replacementGroup": "time-mage-a"
+            },
+            {
+              "id": "time-mage-a3",
+              "skillId": "time-mage-a3",
+              "cost": 3,
+              "rank": 3,
+              "prerequisites": ["time-mage-a2"],
+              "replacementGroup": "time-mage-a3"
+            }
+          ],
+          "b": [
+            {
+              "id": "time-mage-b1",
+              "skillId": "time-mage-b1",
+              "cost": 1,
+              "rank": 1,
+              "prerequisites": [],
+              "replacementGroup": "time-mage-b"
+            },
+            {
+              "id": "time-mage-b2",
+              "skillId": "time-mage-b2",
+              "cost": 2,
+              "rank": 2,
+              "prerequisites": ["time-mage-b1"],
+              "replacementGroup": "time-mage-b"
+            },
+            {
+              "id": "time-mage-b3",
+              "skillId": "time-mage-b3",
+              "cost": 3,
+              "rank": 3,
+              "prerequisites": ["time-mage-b2"],
+              "replacementGroup": "time-mage-b3"
+            }
+          ]
+        }
+      },
+      {
+        "id": "paladin",
+        "routes": {
+          "a": [
+            {
+              "id": "paladin-a1",
+              "skillId": "paladin-a1",
+              "cost": 1,
+              "rank": 1,
+              "prerequisites": [],
+              "replacementGroup": "paladin-a"
+            },
+            {
+              "id": "paladin-a2",
+              "skillId": "paladin-a2",
+              "cost": 2,
+              "rank": 2,
+              "prerequisites": ["paladin-a1"],
+              "replacementGroup": "paladin-a"
+            },
+            {
+              "id": "paladin-a3",
+              "skillId": "paladin-a3",
+              "cost": 3,
+              "rank": 3,
+              "prerequisites": ["paladin-a2"],
+              "replacementGroup": "paladin-a3"
+            }
+          ],
+          "b": [
+            {
+              "id": "paladin-b1",
+              "skillId": "paladin-b1",
+              "cost": 1,
+              "rank": 1,
+              "prerequisites": [],
+              "replacementGroup": "paladin-b"
+            },
+            {
+              "id": "paladin-b2",
+              "skillId": "paladin-b2",
+              "cost": 2,
+              "rank": 2,
+              "prerequisites": ["paladin-b1"],
+              "replacementGroup": "paladin-b"
+            },
+            {
+              "id": "paladin-b3",
+              "skillId": "paladin-b3",
+              "cost": 3,
+              "rank": 3,
+              "prerequisites": ["paladin-b2"],
+              "replacementGroup": "paladin-b3"
+            }
+          ]
+        }
+      }
+    ],
+    "skills": [
+      {
+        "id": "knight-a1",
+        "target": "self",
+        "castTime": 0,
+        "delay": 70,
+        "cooldown": 100,
+        "cooldownId": "knight-a",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "self",
+            "status": {
+              "familyId": "physical-guard",
+              "magnitude": 2000
+            },
+            "duration": 120,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "knight-a2",
+        "target": "self",
+        "castTime": 0,
+        "delay": 70,
+        "cooldown": 100,
+        "cooldownId": "knight-a",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "self",
+            "status": {
+              "familyId": "physical-guard",
+              "magnitude": 3500
+            },
+            "duration": 160,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "knight-a3",
+        "target": "ally-other",
+        "castTime": 0,
+        "delay": 60,
+        "cooldown": 140,
+        "cooldownId": "knight-a3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "selected",
+            "status": {
+              "familyId": "cover"
+            },
+            "duration": 120,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "knight-b1",
+        "target": "self",
+        "castTime": 0,
+        "delay": 80,
+        "cooldown": 140,
+        "cooldownId": "knight-b",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "self",
+            "status": {
+              "familyId": "magic-guard",
+              "magnitude": 2000
+            },
+            "duration": 120,
+            "dispellable": true
+          },
+          {
+            "kind": "apply-status",
+            "target": "self",
+            "status": {
+              "familyId": "reflect",
+              "ratio": 5000,
+              "charges": 1
+            },
+            "duration": 120,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "knight-b2",
+        "target": "self",
+        "castTime": 0,
+        "delay": 80,
+        "cooldown": 140,
+        "cooldownId": "knight-b",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "self",
+            "status": {
+              "familyId": "magic-guard",
+              "magnitude": 3500
+            },
+            "duration": 160,
+            "dispellable": true
+          },
+          {
+            "kind": "apply-status",
+            "target": "self",
+            "status": {
+              "familyId": "reflect",
+              "ratio": 5000,
+              "charges": 2
+            },
+            "duration": 160,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "knight-b3",
+        "target": "enemy-all",
+        "castTime": 0,
+        "delay": 50,
+        "cooldown": 100,
+        "cooldownId": "knight-b3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "all-enemies",
+            "status": {
+              "familyId": "taunt"
+            },
+            "duration": 140,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "wizard-a1",
+        "target": "enemy-single",
+        "castTime": 60,
+        "delay": 110,
+        "cooldown": 160,
+        "cooldownId": "wizard-a",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "magic",
+            "element": "fire",
+            "power": 180,
+            "breakDamage": 10,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "wizard-a2",
+        "target": "enemy-single",
+        "castTime": 60,
+        "delay": 110,
+        "cooldown": 160,
+        "cooldownId": "wizard-a",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "magic",
+            "element": "fire",
+            "power": 260,
+            "breakDamage": 15,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "wizard-a3",
+        "target": "enemy-all",
+        "castTime": 120,
+        "delay": 150,
+        "cooldown": 300,
+        "cooldownId": "wizard-a3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "all-enemies",
+            "attached": [],
+            "damageType": "magic",
+            "element": "light",
+            "power": 320,
+            "breakDamage": 20,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "wizard-b1",
+        "target": "enemy-single",
+        "castTime": 10,
+        "delay": 60,
+        "cooldown": 60,
+        "cooldownId": "wizard-b",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": ["ice", "lightning"],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "magic",
+            "element": "chosen",
+            "power": 100,
+            "breakDamage": 20,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "wizard-b2",
+        "target": "enemy-single",
+        "castTime": 10,
+        "delay": 60,
+        "cooldown": 60,
+        "cooldownId": "wizard-b",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": ["ice", "lightning"],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "magic",
+            "element": "chosen",
+            "power": 130,
+            "breakDamage": 30,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "wizard-b3",
+        "target": "enemy-single",
+        "castTime": 20,
+        "delay": 90,
+        "cooldown": 140,
+        "cooldownId": "wizard-b3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [
+              {
+                "kind": "dispel",
+                "target": "hit-recipient",
+                "polarity": "buff",
+                "count": 1
+              }
+            ],
+            "damageType": "magic",
+            "element": "dark",
+            "power": 150,
+            "breakDamage": 35,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "cleric-a1",
+        "target": "ally-single",
+        "castTime": 0,
+        "delay": 70,
+        "cooldown": 70,
+        "cooldownId": "cleric-a",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "heal",
+            "target": "selected",
+            "power": 200,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "cleric-a2",
+        "target": "ally-single",
+        "castTime": 0,
+        "delay": 70,
+        "cooldown": 70,
+        "cooldownId": "cleric-a",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "heal",
+            "target": "selected",
+            "power": 320,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "cleric-a3",
+        "target": "dead-ally-other",
+        "castTime": 40,
+        "delay": 120,
+        "cooldown": 300,
+        "cooldownId": "cleric-a3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "revive",
+            "target": "selected",
+            "hpRatio": 5000
+          }
+        ]
+      },
+      {
+        "id": "cleric-b1",
+        "target": "ally-single",
+        "castTime": 0,
+        "delay": 60,
+        "cooldown": 100,
+        "cooldownId": "cleric-b",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "selected",
+            "status": {
+              "familyId": "spd-up",
+              "magnitude": 1500
+            },
+            "duration": 140,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "cleric-b2",
+        "target": "ally-single",
+        "castTime": 0,
+        "delay": 60,
+        "cooldown": 100,
+        "cooldownId": "cleric-b",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "selected",
+            "status": {
+              "familyId": "spd-up",
+              "magnitude": 2500
+            },
+            "duration": 180,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "cleric-b3",
+        "target": "ally-all",
+        "castTime": 20,
+        "delay": 100,
+        "cooldown": 160,
+        "cooldownId": "cleric-b3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "heal",
+            "target": "all-allies",
+            "power": 120,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          },
+          {
+            "kind": "dispel",
+            "target": "all-allies",
+            "polarity": "debuff",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "id": "thief-a1",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 40,
+        "cooldown": 40,
+        "cooldownId": "thief-a",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "physical",
+            "element": "none",
+            "power": 80,
+            "breakDamage": 5,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "thief-a2",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 40,
+        "cooldown": 40,
+        "cooldownId": "thief-a",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "physical",
+            "element": "none",
+            "power": 110,
+            "breakDamage": 8,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "thief-a3",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 80,
+        "cooldown": 160,
+        "cooldownId": "thief-a3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "physical",
+            "element": "dark",
+            "power": 220,
+            "breakDamage": 15,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "thief-b1",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 60,
+        "cooldown": 100,
+        "cooldownId": "thief-b",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [
+              {
+                "kind": "apply-status",
+                "target": "hit-recipient",
+                "status": {
+                  "familyId": "spd-down",
+                  "magnitude": 1500
+                },
+                "duration": 120,
+                "dispellable": true
+              }
+            ],
+            "damageType": "physical",
+            "element": "none",
+            "power": 60,
+            "breakDamage": 5,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "thief-b2",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 60,
+        "cooldown": 100,
+        "cooldownId": "thief-b",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [
+              {
+                "kind": "apply-status",
+                "target": "hit-recipient",
+                "status": {
+                  "familyId": "spd-down",
+                  "magnitude": 2500
+                },
+                "duration": 160,
+                "dispellable": true
+              }
+            ],
+            "damageType": "physical",
+            "element": "none",
+            "power": 90,
+            "breakDamage": 10,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "thief-b3",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 70,
+        "cooldown": 180,
+        "cooldownId": "thief-b3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "selected",
+            "status": {
+              "familyId": "spd-down",
+              "magnitude": 2500
+            },
+            "duration": 160,
+            "dispellable": true
+          },
+          {
+            "kind": "apply-status",
+            "target": "self",
+            "status": {
+              "familyId": "spd-up",
+              "magnitude": 2500
+            },
+            "duration": 160,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "ranger-a1",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 70,
+        "cooldown": 90,
+        "cooldownId": "ranger-a",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [
+              {
+                "kind": "shift",
+                "target": "hit-recipient",
+                "direction": "delay",
+                "amount": 20
+              }
+            ],
+            "damageType": "physical",
+            "element": "none",
+            "power": 100,
+            "breakDamage": 10,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "ranger-a2",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 70,
+        "cooldown": 90,
+        "cooldownId": "ranger-a",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [
+              {
+                "kind": "shift",
+                "target": "hit-recipient",
+                "direction": "delay",
+                "amount": 30
+              }
+            ],
+            "damageType": "physical",
+            "element": "none",
+            "power": 140,
+            "breakDamage": 15,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "ranger-a3",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 80,
+        "cooldown": 180,
+        "cooldownId": "ranger-a3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [
+              {
+                "kind": "cancel-cast",
+                "target": "hit-recipient"
+              }
+            ],
+            "damageType": "physical",
+            "element": "none",
+            "power": 120,
+            "breakDamage": 10,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "ranger-b1",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 60,
+        "cooldown": 120,
+        "cooldownId": "ranger-b",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "trap",
+            "target": "selected",
+            "duration": 200,
+            "attack": {
+              "damageType": "physical",
+              "element": "none",
+              "power": 70,
+              "breakDamage": 10,
+              "hits": 1,
+              "actorReference": "before-activation",
+              "targetReference": "before-effect"
+            },
+            "attached": [
+              {
+                "kind": "shift",
+                "target": "hit-recipient",
+                "direction": "delay",
+                "amount": 20
+              }
+            ],
+            "snapshot": "on-trigger"
+          }
+        ]
+      },
+      {
+        "id": "ranger-b2",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 60,
+        "cooldown": 120,
+        "cooldownId": "ranger-b",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "trap",
+            "target": "selected",
+            "duration": 240,
+            "attack": {
+              "damageType": "physical",
+              "element": "none",
+              "power": 100,
+              "breakDamage": 20,
+              "hits": 1,
+              "actorReference": "before-activation",
+              "targetReference": "before-effect"
+            },
+            "attached": [
+              {
+                "kind": "shift",
+                "target": "hit-recipient",
+                "direction": "delay",
+                "amount": 35
+              }
+            ],
+            "snapshot": "on-trigger"
+          }
+        ]
+      },
+      {
+        "id": "ranger-b3",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 80,
+        "cooldown": 140,
+        "cooldownId": "ranger-b3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [
+              {
+                "kind": "apply-status",
+                "target": "hit-recipient",
+                "status": {
+                  "familyId": "poison",
+                  "damage": 8,
+                  "interval": 20
+                },
+                "duration": 120,
+                "dispellable": true
+              }
+            ],
+            "damageType": "physical",
+            "element": "none",
+            "power": 80,
+            "breakDamage": 5,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "berserker-a1",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 90,
+        "cooldown": 100,
+        "cooldownId": "berserker-a",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "physical",
+            "element": "none",
+            "power": {
+              "kind": "low-hp",
+              "normal": 120,
+              "lowHp": 180,
+              "snapshot": "before-activation"
+            },
+            "breakDamage": 10,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "berserker-a2",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 90,
+        "cooldown": 100,
+        "cooldownId": "berserker-a",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "physical",
+            "element": "none",
+            "power": {
+              "kind": "low-hp",
+              "normal": 170,
+              "lowHp": 250,
+              "snapshot": "before-activation"
+            },
+            "breakDamage": 15,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "berserker-a3",
+        "target": "self",
+        "castTime": 0,
+        "delay": 70,
+        "cooldown": 360,
+        "cooldownId": "berserker-a3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "self",
+            "status": {
+              "familyId": "self-revive",
+              "hpRatio": 4000,
+              "charges": 1
+            },
+            "duration": 240,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "berserker-b1",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 100,
+        "cooldown": 120,
+        "cooldownId": "berserker-b",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "physical",
+            "element": "none",
+            "power": 100,
+            "breakDamage": 30,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "berserker-b2",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 100,
+        "cooldown": 120,
+        "cooldownId": "berserker-b",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "physical",
+            "element": "none",
+            "power": 130,
+            "breakDamage": 45,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "berserker-b3",
+        "target": "enemy-single",
+        "castTime": 30,
+        "delay": 130,
+        "cooldown": 240,
+        "cooldownId": "berserker-b3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "physical",
+            "element": "none",
+            "power": 180,
+            "breakDamage": 70,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "time-mage-a1",
+        "target": "waiting-ally-other",
+        "castTime": 0,
+        "delay": 70,
+        "cooldown": 120,
+        "cooldownId": "time-mage-a",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "shift",
+            "target": "selected",
+            "direction": "advance",
+            "amount": 20
+          }
+        ]
+      },
+      {
+        "id": "time-mage-a2",
+        "target": "waiting-ally-other",
+        "castTime": 0,
+        "delay": 70,
+        "cooldown": 120,
+        "cooldownId": "time-mage-a",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "shift",
+            "target": "selected",
+            "direction": "advance",
+            "amount": 35
+          }
+        ]
+      },
+      {
+        "id": "time-mage-a3",
+        "target": "ally-all",
+        "castTime": 0,
+        "delay": 90,
+        "cooldown": 200,
+        "cooldownId": "time-mage-a3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "all-allies",
+            "status": {
+              "familyId": "spd-up",
+              "magnitude": 2500
+            },
+            "duration": 180,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "time-mage-b1",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 70,
+        "cooldown": 120,
+        "cooldownId": "time-mage-b",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "shift",
+            "target": "selected",
+            "direction": "delay",
+            "amount": 20
+          }
+        ]
+      },
+      {
+        "id": "time-mage-b2",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 70,
+        "cooldown": 120,
+        "cooldownId": "time-mage-b",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "shift",
+            "target": "selected",
+            "direction": "delay",
+            "amount": 35
+          }
+        ]
+      },
+      {
+        "id": "time-mage-b3",
+        "target": "enemy-single",
+        "castTime": 20,
+        "delay": 110,
+        "cooldown": 280,
+        "cooldownId": "time-mage-b3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "selected",
+            "status": {
+              "familyId": "time-stop"
+            },
+            "duration": 40,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "paladin-a1",
+        "target": "self",
+        "castTime": 0,
+        "delay": 70,
+        "cooldown": 120,
+        "cooldownId": "paladin-a",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "self",
+            "status": {
+              "familyId": "counter",
+              "attack": {
+                "damageType": "physical",
+                "element": "light",
+                "power": 80,
+                "breakDamage": 10,
+                "hits": 1,
+                "actorReference": "before-activation",
+                "targetReference": "before-effect"
+              }
+            },
+            "duration": 120,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "paladin-a2",
+        "target": "self",
+        "castTime": 0,
+        "delay": 70,
+        "cooldown": 120,
+        "cooldownId": "paladin-a",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "self",
+            "status": {
+              "familyId": "counter",
+              "attack": {
+                "damageType": "physical",
+                "element": "light",
+                "power": 120,
+                "breakDamage": 15,
+                "hits": 1,
+                "actorReference": "before-activation",
+                "targetReference": "before-effect"
+              }
+            },
+            "duration": 160,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "paladin-a3",
+        "target": "enemy-single",
+        "castTime": 20,
+        "delay": 100,
+        "cooldown": 160,
+        "cooldownId": "paladin-a3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "physical",
+            "element": "light",
+            "power": 180,
+            "breakDamage": 20,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          },
+          {
+            "kind": "heal",
+            "target": "self",
+            "power": 100,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "paladin-b1",
+        "target": "self",
+        "castTime": 0,
+        "delay": 70,
+        "cooldown": 140,
+        "cooldownId": "paladin-b",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "self",
+            "status": {
+              "familyId": "follow",
+              "attack": {
+                "damageType": "physical",
+                "element": "none",
+                "power": 60,
+                "breakDamage": 5,
+                "hits": 1,
+                "actorReference": "before-activation",
+                "targetReference": "before-effect"
+              }
+            },
+            "duration": 120,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "paladin-b2",
+        "target": "self",
+        "castTime": 0,
+        "delay": 70,
+        "cooldown": 140,
+        "cooldownId": "paladin-b",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "self",
+            "status": {
+              "familyId": "follow",
+              "attack": {
+                "damageType": "physical",
+                "element": "none",
+                "power": 90,
+                "breakDamage": 10,
+                "hits": 1,
+                "actorReference": "before-activation",
+                "targetReference": "before-effect"
+              }
+            },
+            "duration": 160,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "paladin-b3",
+        "target": "ally-all",
+        "castTime": 0,
+        "delay": 90,
+        "cooldown": 180,
+        "cooldownId": "paladin-b3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "all-allies",
+            "status": {
+              "familyId": "atk-up",
+              "magnitude": 2500
+            },
+            "duration": 160,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "boss-01-s1",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 100,
+        "cooldown": 0,
+        "cooldownId": "boss-01-s1",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "physical",
+            "element": "none",
+            "power": 100,
+            "breakDamage": 0,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "boss-01-s2",
+        "target": "enemy-all",
+        "castTime": 80,
+        "delay": 140,
+        "cooldown": 0,
+        "cooldownId": "boss-01-s2",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "all-enemies",
+            "attached": [],
+            "damageType": "physical",
+            "element": "none",
+            "power": 160,
+            "breakDamage": 0,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "boss-01-s3",
+        "target": "self",
+        "castTime": 0,
+        "delay": 100,
+        "cooldown": 0,
+        "cooldownId": "boss-01-s3",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": []
+      },
+      {
+        "id": "guardian-01-01-s1",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 100,
+        "cooldown": 0,
+        "cooldownId": "guardian-01-01-s1",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "physical",
+            "element": "none",
+            "power": 100,
+            "breakDamage": 0,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "guardian-01-01-s2",
+        "target": "enemy-single",
+        "castTime": 80,
+        "delay": 140,
+        "cooldown": 0,
+        "cooldownId": "guardian-01-01-s2",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "physical",
+            "element": "none",
+            "power": 180,
+            "breakDamage": 0,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "guardian-01-02-s1",
+        "target": "enemy-single",
+        "castTime": 20,
+        "delay": 100,
+        "cooldown": 0,
+        "cooldownId": "guardian-01-02-s1",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "magic",
+            "element": "fire",
+            "power": 100,
+            "breakDamage": 0,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "guardian-01-02-s2",
+        "target": "enemy-all",
+        "castTime": 90,
+        "delay": 140,
+        "cooldown": 0,
+        "cooldownId": "guardian-01-02-s2",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "all-enemies",
+            "attached": [],
+            "damageType": "magic",
+            "element": "fire",
+            "power": 140,
+            "breakDamage": 0,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "guardian-01-03-s1",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 110,
+        "cooldown": 0,
+        "cooldownId": "guardian-01-03-s1",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [],
+            "damageType": "physical",
+            "element": "none",
+            "power": 110,
+            "breakDamage": 0,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "guardian-01-03-s2",
+        "target": "self",
+        "castTime": 0,
+        "delay": 100,
+        "cooldown": 0,
+        "cooldownId": "guardian-01-03-s2",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "self",
+            "status": {
+              "familyId": "physical-guard",
+              "magnitude": 2500
+            },
+            "duration": 100,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "guardian-01-04-s1",
+        "target": "enemy-single",
+        "castTime": 20,
+        "delay": 100,
+        "cooldown": 0,
+        "cooldownId": "guardian-01-04-s1",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [
+              {
+                "kind": "apply-status",
+                "target": "hit-recipient",
+                "status": {
+                  "familyId": "poison",
+                  "damage": 6,
+                  "interval": 20
+                },
+                "duration": 80,
+                "dispellable": true
+              }
+            ],
+            "damageType": "magic",
+            "element": "fire",
+            "power": 90,
+            "breakDamage": 0,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "guardian-01-04-s2",
+        "target": "self",
+        "castTime": 0,
+        "delay": 100,
+        "cooldown": 0,
+        "cooldownId": "guardian-01-04-s2",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "self",
+            "status": {
+              "familyId": "magic-guard",
+              "magnitude": 2500
+            },
+            "duration": 100,
+            "dispellable": true
+          }
+        ]
+      },
+      {
+        "id": "guardian-01-05-s1",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 60,
+        "cooldown": 0,
+        "cooldownId": "guardian-01-05-s1",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "attack",
+            "target": "selected",
+            "attached": [
+              {
+                "kind": "shift",
+                "target": "hit-recipient",
+                "direction": "delay",
+                "amount": 15
+              }
+            ],
+            "damageType": "physical",
+            "element": "none",
+            "power": 80,
+            "breakDamage": 0,
+            "hits": 1,
+            "actorReference": "before-activation",
+            "targetReference": "before-effect"
+          }
+        ]
+      },
+      {
+        "id": "guardian-01-05-s2",
+        "target": "enemy-single",
+        "castTime": 0,
+        "delay": 100,
+        "cooldown": 0,
+        "cooldownId": "guardian-01-05-s2",
+        "actorSnapshot": "before-activation",
+        "targetSnapshot": "before-activation",
+        "elementChoices": [],
+        "effects": [
+          {
+            "kind": "apply-status",
+            "target": "selected",
+            "status": {
+              "familyId": "spd-down",
+              "magnitude": 1500
+            },
+            "duration": 100,
+            "dispellable": true
+          }
+        ]
+      }
+    ],
+    "equipment": [
+      {
+        "id": "starter-sword",
+        "kind": "starter",
+        "stats": {
+          "atk": 10
+        },
+        "maxOwned": 3
+      },
+      {
+        "id": "starter-staff",
+        "kind": "starter",
+        "stats": {
+          "mag": 10
+        },
+        "maxOwned": 3
+      },
+      {
+        "id": "starter-armor",
+        "kind": "starter",
+        "stats": {
+          "def": 5
+        },
+        "maxOwned": 3
+      },
+      {
+        "id": "starter-charm",
+        "kind": "starter",
+        "stats": {
+          "mdef": 5
+        },
+        "maxOwned": 3
+      },
+      {
+        "id": "starter-boots",
+        "kind": "starter",
+        "stats": {
+          "spd": 5
+        },
+        "maxOwned": 3
+      },
+      {
+        "id": "starter-ring",
+        "kind": "starter",
+        "stats": {
+          "maxHp": 50
+        },
+        "maxOwned": 3
+      },
+      {
+        "id": "relic-01-01",
+        "kind": "relic",
+        "stats": {
+          "atk": 12
+        },
+        "maxOwned": 1,
+        "sourceEnemyId": "guardian-01-01"
+      },
+      {
+        "id": "relic-01-02",
+        "kind": "relic",
+        "stats": {
+          "mag": 12
+        },
+        "maxOwned": 1,
+        "sourceEnemyId": "guardian-01-02"
+      },
+      {
+        "id": "relic-01-03",
+        "kind": "relic",
+        "stats": {
+          "def": 7,
+          "maxHp": 20
+        },
+        "maxOwned": 1,
+        "sourceEnemyId": "guardian-01-03"
+      },
+      {
+        "id": "relic-01-04",
+        "kind": "relic",
+        "stats": {
+          "mdef": 7,
+          "maxHp": 20
+        },
+        "maxOwned": 1,
+        "sourceEnemyId": "guardian-01-04"
+      },
+      {
+        "id": "relic-01-05",
+        "kind": "relic",
+        "stats": {
+          "spd": 6,
+          "maxHp": 10
+        },
+        "maxOwned": 1,
+        "sourceEnemyId": "guardian-01-05"
+      }
+    ],
+    "enemies": [
+      {
+        "id": "boss-01",
+        "stats": {
+          "maxHp": 400,
+          "atk": 38,
+          "mag": 38,
+          "def": 12,
+          "mdef": 12,
+          "spd": 80
+        },
+        "maxBreakGauge": 60,
+        "weakness": "lightning",
+        "resistance": "fire",
+        "breakResistance": 0,
+        "knockbackResistance": 0,
+        "cancelImmune": false,
+        "timeStopImmune": false,
+        "phases": [
+          {
+            "id": "boss-01-phase-1",
+            "hpThreshold": 10000,
+            "actions": [
+              {
+                "skillId": "boss-01-s1",
+                "selection": "lowest-hp"
+              },
+              {
+                "skillId": "boss-01-s2",
+                "selection": "all"
+              },
+              {
+                "skillId": "boss-01-s3",
+                "selection": "self"
+              }
+            ]
+          }
+        ],
+        "reward": {
+          "skillPointsPerCharacter": 1,
+          "equipment": [],
+          "unlockFloorId": "floor-02",
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-01-01",
+        "stats": {
+          "maxHp": 250,
+          "atk": 32,
+          "mag": 32,
+          "def": 10,
+          "mdef": 10,
+          "spd": 80
+        },
+        "maxBreakGauge": 45,
+        "weakness": "lightning",
+        "resistance": "fire",
+        "breakResistance": 0,
+        "knockbackResistance": 0,
+        "cancelImmune": false,
+        "timeStopImmune": false,
+        "phases": [
+          {
+            "id": "guardian-01-01-phase-1",
+            "hpThreshold": 10000,
+            "actions": [
+              {
+                "skillId": "guardian-01-01-s1",
+                "selection": "lowest-hp"
+              },
+              {
+                "skillId": "guardian-01-01-s2",
+                "selection": "lowest-hp"
+              }
+            ]
+          }
+        ],
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-01-01",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-01-02",
+        "stats": {
+          "maxHp": 250,
+          "atk": 32,
+          "mag": 32,
+          "def": 10,
+          "mdef": 10,
+          "spd": 80
+        },
+        "maxBreakGauge": 45,
+        "weakness": "lightning",
+        "resistance": "fire",
+        "breakResistance": 0,
+        "knockbackResistance": 0,
+        "cancelImmune": false,
+        "timeStopImmune": false,
+        "phases": [
+          {
+            "id": "guardian-01-02-phase-1",
+            "hpThreshold": 10000,
+            "actions": [
+              {
+                "skillId": "guardian-01-02-s1",
+                "selection": "highest-mag"
+              },
+              {
+                "skillId": "guardian-01-02-s2",
+                "selection": "all"
+              }
+            ]
+          }
+        ],
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-01-02",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-01-03",
+        "stats": {
+          "maxHp": 290,
+          "atk": 32,
+          "mag": 32,
+          "def": 16,
+          "mdef": 10,
+          "spd": 80
+        },
+        "maxBreakGauge": 45,
+        "weakness": "lightning",
+        "resistance": "fire",
+        "breakResistance": 0,
+        "knockbackResistance": 0,
+        "cancelImmune": false,
+        "timeStopImmune": false,
+        "phases": [
+          {
+            "id": "guardian-01-03-phase-1",
+            "hpThreshold": 10000,
+            "actions": [
+              {
+                "skillId": "guardian-01-03-s1",
+                "selection": "highest-atk"
+              },
+              {
+                "skillId": "guardian-01-03-s2",
+                "selection": "self"
+              }
+            ]
+          }
+        ],
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-01-03",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-01-04",
+        "stats": {
+          "maxHp": 250,
+          "atk": 32,
+          "mag": 32,
+          "def": 10,
+          "mdef": 16,
+          "spd": 80
+        },
+        "maxBreakGauge": 45,
+        "weakness": "lightning",
+        "resistance": "fire",
+        "breakResistance": 0,
+        "knockbackResistance": 0,
+        "cancelImmune": false,
+        "timeStopImmune": false,
+        "phases": [
+          {
+            "id": "guardian-01-04-phase-1",
+            "hpThreshold": 10000,
+            "actions": [
+              {
+                "skillId": "guardian-01-04-s1",
+                "selection": "lowest-hp"
+              },
+              {
+                "skillId": "guardian-01-04-s2",
+                "selection": "self"
+              }
+            ]
+          }
+        ],
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-01-04",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      },
+      {
+        "id": "guardian-01-05",
+        "stats": {
+          "maxHp": 250,
+          "atk": 32,
+          "mag": 32,
+          "def": 10,
+          "mdef": 10,
+          "spd": 110
+        },
+        "maxBreakGauge": 45,
+        "weakness": "lightning",
+        "resistance": "fire",
+        "breakResistance": 0,
+        "knockbackResistance": 0,
+        "cancelImmune": false,
+        "timeStopImmune": false,
+        "phases": [
+          {
+            "id": "guardian-01-05-phase-1",
+            "hpThreshold": 10000,
+            "actions": [
+              {
+                "skillId": "guardian-01-05-s1",
+                "selection": "highest-spd"
+              },
+              {
+                "skillId": "guardian-01-05-s2",
+                "selection": "highest-spd"
+              }
+            ]
+          }
+        ],
+        "reward": {
+          "skillPointsPerCharacter": 0,
+          "equipment": [
+            {
+              "id": "relic-01-05",
+              "quantity": 1
+            }
+          ],
+          "unlockFloorId": null,
+          "finalClear": false
+        }
+      }
+    ],
+    "floors": [
+      {
+        "id": "floor-01",
+        "entryNodeId": "floor-01-entry",
+        "nodes": [
+          {
+            "id": "floor-01-entry",
+            "links": ["floor-01-hall-1"],
+            "enemies": []
+          },
+          {
+            "id": "floor-01-hall-1",
+            "links": [
+              "floor-01-entry",
+              "floor-01-hall-2",
+              "floor-01-alcove-1",
+              "floor-01-alcove-2"
+            ],
+            "enemies": []
+          },
+          {
+            "id": "floor-01-hall-2",
+            "links": [
+              "floor-01-hall-1",
+              "floor-01-hall-3",
+              "floor-01-alcove-3",
+              "floor-01-alcove-4"
+            ],
+            "enemies": []
+          },
+          {
+            "id": "floor-01-hall-3",
+            "links": ["floor-01-hall-2", "floor-01-boss", "floor-01-alcove-5"],
+            "enemies": []
+          },
+          {
+            "id": "floor-01-boss",
+            "links": ["floor-01-hall-3"],
+            "enemies": ["boss-01"]
+          },
+          {
+            "id": "floor-01-alcove-1",
+            "links": ["floor-01-hall-1"],
+            "enemies": ["guardian-01-01"]
+          },
+          {
+            "id": "floor-01-alcove-2",
+            "links": ["floor-01-hall-1"],
+            "enemies": ["guardian-01-02"]
+          },
+          {
+            "id": "floor-01-alcove-3",
+            "links": ["floor-01-hall-2"],
+            "enemies": ["guardian-01-03"]
+          },
+          {
+            "id": "floor-01-alcove-4",
+            "links": ["floor-01-hall-2"],
+            "enemies": ["guardian-01-04"]
+          },
+          {
+            "id": "floor-01-alcove-5",
+            "links": ["floor-01-hall-3"],
+            "enemies": ["guardian-01-05"]
+          }
+        ]
+      }
+    ]
+  },
+  "presentation": {
+    "entries": {
+      "knight-a1": {
+        "name": "盾の構えI",
+        "description": "物理攻撃に備え、受ける物理ダメージを軽減する。"
+      },
+      "knight-a2": {
+        "name": "盾の構えII",
+        "description": "物理攻撃に備え、受ける物理ダメージを軽減する。"
+      },
+      "knight-a3": {
+        "name": "守護の誓い",
+        "description": "指定した仲間への単体攻撃を引き受ける。"
+      },
+      "knight-b1": {
+        "name": "対魔の構えI",
+        "description": "魔法ダメージを軽減し、被弾ダメージの50%を反射する。"
+      },
+      "knight-b2": {
+        "name": "対魔の構えII",
+        "description": "魔法ダメージを軽減し、被弾ダメージの50%を反射する。"
+      },
+      "knight-b3": {
+        "name": "挑発の号令",
+        "description": "敵の単体攻撃を自身へ引きつける。"
+      },
+      "wizard-a1": {
+        "name": "炎槍I",
+        "description": "詠唱後に火属性の魔法攻撃を放つ。火耐性の敵には威力が落ちる。"
+      },
+      "wizard-a2": {
+        "name": "炎槍II",
+        "description": "詠唱後に火属性の魔法攻撃を放つ。火耐性の敵には威力が落ちる。"
+      },
+      "wizard-a3": {
+        "name": "終焉の光",
+        "description": "長い詠唱の後、敵全体へ光属性魔法を放つ。"
+      },
+      "wizard-b1": {
+        "name": "氷雷術I",
+        "description": "氷・雷を選ぶ短詠唱の魔法。弱点ならゲージ削りは2倍。"
+      },
+      "wizard-b2": {
+        "name": "氷雷術II",
+        "description": "氷・雷を選ぶ短詠唱の魔法。弱点ならゲージ削りは2倍。"
+      },
+      "wizard-b3": {
+        "name": "属性解体",
+        "description": "闇属性魔法が命中した相手の強化を1件解除する。"
+      },
+      "cleric-a1": {
+        "name": "ヒールI",
+        "description": "味方1人のHPをMAGに応じて回復する。"
+      },
+      "cleric-a2": {
+        "name": "ヒールII",
+        "description": "味方1人のHPをMAGに応じて回復する。"
+      },
+      "cleric-a3": {
+        "name": "リザレクション",
+        "description": "戦闘不能の仲間を最大HPの50%で蘇生する。"
+      },
+      "cleric-b1": {
+        "name": "導きの祈りI",
+        "description": "味方のSPDを高め、以後の待機を短くする。"
+      },
+      "cleric-b2": {
+        "name": "導きの祈りII",
+        "description": "味方のSPDを高め、以後の待機を短くする。"
+      },
+      "cleric-b3": {
+        "name": "浄化の光",
+        "description": "味方全体を回復し、各人の弱体を1件解除する。"
+      },
+      "thief-a1": {
+        "name": "影斬りI",
+        "description": "短い待機で繰り返せる無属性の物理攻撃。"
+      },
+      "thief-a2": {
+        "name": "影斬りII",
+        "description": "短い待機で繰り返せる無属性の物理攻撃。"
+      },
+      "thief-a3": {
+        "name": "急所の刃",
+        "description": "闇属性の強力な物理攻撃。"
+      },
+      "thief-b1": {
+        "name": "足払いI",
+        "description": "物理攻撃が命中した敵のSPDを下げる。"
+      },
+      "thief-b2": {
+        "name": "足払いII",
+        "description": "物理攻撃が命中した敵のSPDを下げる。"
+      },
+      "thief-b3": {
+        "name": "速度奪取",
+        "description": "敵のSPDを下げ、自身のSPDを上げる。"
+      },
+      "ranger-a1": {
+        "name": "妨害射撃I",
+        "description": "物理攻撃が命中した相手の手番を後退させる。"
+      },
+      "ranger-a2": {
+        "name": "妨害射撃II",
+        "description": "物理攻撃が命中した相手の手番を後退させる。"
+      },
+      "ranger-a3": {
+        "name": "詠唱狙撃",
+        "description": "物理攻撃が命中した相手の詠唱をキャンセルする。"
+      },
+      "ranger-b1": {
+        "name": "遅延罠I",
+        "description": "敵の次の行動開始時に発動し、ダメージと手番後退を与える。"
+      },
+      "ranger-b2": {
+        "name": "遅延罠II",
+        "description": "敵の次の行動開始時に発動し、ダメージと手番後退を与える。"
+      },
+      "ranger-b3": {
+        "name": "毒矢",
+        "description": "命中後、20 TUごとにHPを8削る毒を付与する。"
+      },
+      "berserker-a1": {
+        "name": "背水撃I",
+        "description": "発動直前のHPが50%以下なら威力が上がる物理攻撃。"
+      },
+      "berserker-a2": {
+        "name": "背水撃II",
+        "description": "発動直前のHPが50%以下なら威力が上がる物理攻撃。"
+      },
+      "berserker-a3": {
+        "name": "不屈の魂",
+        "description": "戦闘不能時に一度だけ最大HPの40%で立ち上がる。"
+      },
+      "berserker-b1": {
+        "name": "破砕撃I",
+        "description": "ブレイクゲージを大きく削る無属性の物理攻撃。"
+      },
+      "berserker-b2": {
+        "name": "破砕撃II",
+        "description": "ブレイクゲージを大きく削る無属性の物理攻撃。"
+      },
+      "berserker-b3": {
+        "name": "粉砕の一撃",
+        "description": "短い詠唱後、ゲージを70削る物理攻撃。"
+      },
+      "time-mage-a1": {
+        "name": "時間加速I",
+        "description": "待機・詠唱中の他の味方の予定を前進させる。手番到達済みの味方には使えない。"
+      },
+      "time-mage-a2": {
+        "name": "時間加速II",
+        "description": "待機・詠唱中の他の味方の予定を前進させる。手番到達済みの味方には使えない。"
+      },
+      "time-mage-a3": {
+        "name": "加速の陣",
+        "description": "味方全体のSPDを25%高める。"
+      },
+      "time-mage-b1": {
+        "name": "時間遅延I",
+        "description": "敵の待機・詠唱予定を後退させる。"
+      },
+      "time-mage-b2": {
+        "name": "時間遅延II",
+        "description": "敵の待機・詠唱予定を後退させる。"
+      },
+      "time-mage-b3": {
+        "name": "時間停止",
+        "description": "敵の予定を40 TU凍結する。"
+      },
+      "paladin-a1": {
+        "name": "裁きの構えI",
+        "description": "攻撃を受けたとき、光属性のカウンターで応じる。"
+      },
+      "paladin-a2": {
+        "name": "裁きの構えII",
+        "description": "攻撃を受けたとき、光属性のカウンターで応じる。"
+      },
+      "paladin-a3": {
+        "name": "聖断",
+        "description": "光属性で斬りつけ、続いて自身を回復する。"
+      },
+      "paladin-b1": {
+        "name": "連携の構えI",
+        "description": "仲間の通常攻撃・攻撃スキルに無属性の追撃を合わせる。"
+      },
+      "paladin-b2": {
+        "name": "連携の構えII",
+        "description": "仲間の通常攻撃・攻撃スキルに無属性の追撃を合わせる。"
+      },
+      "paladin-b3": {
+        "name": "総攻撃の号令",
+        "description": "味方全体のATKを25%高める。"
+      },
+      "knight": {
+        "name": "ナイト",
+        "description": "物理・魔法への備えを作り、仲間を守る。"
+      },
+      "wizard": {
+        "name": "ウィザード",
+        "description": "属性を使い分けて弱点とゲージを攻める。"
+      },
+      "cleric": {
+        "name": "クレリック",
+        "description": "回復・速度支援・浄化で手番を支える。"
+      },
+      "thief": {
+        "name": "シーフ",
+        "description": "短いディレイとSPD操作で攻め続ける。"
+      },
+      "ranger": {
+        "name": "レンジャー",
+        "description": "後退・罠・詠唱妨害で敵の予定を崩す。"
+      },
+      "berserker": {
+        "name": "バーサーカー",
+        "description": "背水と強いゲージ削りで戦線を突破する。"
+      },
+      "time-mage": {
+        "name": "時魔道士",
+        "description": "待機・詠唱予定を操り、仲間に時間を渡す。"
+      },
+      "paladin": {
+        "name": "パラディン",
+        "description": "反撃・追撃で仲間の攻撃と連携する。"
+      },
+      "starter-sword": {
+        "name": "訓練剣",
+        "description": "初期装備。6枠のどこにでも装備でき、能力を固定値で加算する。"
+      },
+      "starter-staff": {
+        "name": "木の杖",
+        "description": "初期装備。6枠のどこにでも装備でき、能力を固定値で加算する。"
+      },
+      "starter-armor": {
+        "name": "革の鎧",
+        "description": "初期装備。6枠のどこにでも装備でき、能力を固定値で加算する。"
+      },
+      "starter-charm": {
+        "name": "守りの護符",
+        "description": "初期装備。6枠のどこにでも装備でき、能力を固定値で加算する。"
+      },
+      "starter-boots": {
+        "name": "旅人の靴",
+        "description": "初期装備。6枠のどこにでも装備でき、能力を固定値で加算する。"
+      },
+      "starter-ring": {
+        "name": "生命の指輪",
+        "description": "初期装備。6枠のどこにでも装備でき、能力を固定値で加算する。"
+      },
+      "relic-01-01": {
+        "name": "石牙の短剣",
+        "description": "対応する祠の守護者の初回討伐報酬。パーティ全体で1個のみ所持できる。"
+      },
+      "relic-01-02": {
+        "name": "灯火の杖",
+        "description": "対応する祠の守護者の初回討伐報酬。パーティ全体で1個のみ所持できる。"
+      },
+      "relic-01-03": {
+        "name": "石壁の盾",
+        "description": "対応する祠の守護者の初回討伐報酬。パーティ全体で1個のみ所持できる。"
+      },
+      "relic-01-04": {
+        "name": "祈りの石",
+        "description": "対応する祠の守護者の初回討伐報酬。パーティ全体で1個のみ所持できる。"
+      },
+      "relic-01-05": {
+        "name": "風見の羽",
+        "description": "対応する祠の守護者の初回討伐報酬。パーティ全体で1個のみ所持できる。"
+      },
+      "party-1": {
+        "name": "仲間1",
+        "description": "自由にジョブ・スキル・6枠装備を変更できる仲間。"
+      },
+      "party-2": {
+        "name": "仲間2",
+        "description": "自由にジョブ・スキル・6枠装備を変更できる仲間。"
+      },
+      "party-3": {
+        "name": "仲間3",
+        "description": "自由にジョブ・スキル・6枠装備を変更できる仲間。"
+      },
+      "floor-01": {
+        "name": "石造の試練",
+        "description": "灯火回廊の先で門衛ゴーレムが待つ。5つの祠は任意に挑戦できる。"
+      },
+      "floor-02": {
+        "name": "翠蔦の庭",
+        "description": "進行IDと報酬は保持します。この版には探索・戦闘データを収録していません。"
+      },
+      "floor-03": {
+        "name": "赤砂の時計廊",
+        "description": "進行IDと報酬は保持します。この版には探索・戦闘データを収録していません。"
+      },
+      "floor-04": {
+        "name": "氷晶の聖堂",
+        "description": "進行IDと報酬は保持します。この版には探索・戦闘データを収録していません。"
+      },
+      "floor-05": {
+        "name": "雷雲の空橋",
+        "description": "進行IDと報酬は保持します。この版には探索・戦闘データを収録していません。"
+      },
+      "floor-06": {
+        "name": "黒曜の炉心",
+        "description": "進行IDと報酬は保持します。この版には探索・戦闘データを収録していません。"
+      },
+      "floor-07": {
+        "name": "月影の夢宮",
+        "description": "進行IDと報酬は保持します。この版には探索・戦闘データを収録していません。"
+      },
+      "floor-08": {
+        "name": "星詠みの天球",
+        "description": "進行IDと報酬は保持します。この版には探索・戦闘データを収録していません。"
+      },
+      "floor-09": {
+        "name": "黎明の聖域",
+        "description": "進行IDと報酬は保持します。この版には探索・戦闘データを収録していません。"
+      },
+      "floor-10": {
+        "name": "神座の頂",
+        "description": "進行IDと報酬は保持します。この版には探索・戦闘データを収録していません。"
+      },
+      "basic-attack": {
+        "name": "通常攻撃",
+        "description": "無料の無属性物理攻撃。ゲージを削り、習得ポイントを消費しない。"
+      },
+      "wait": {
+        "name": "待機",
+        "description": "短く待ち、コマンドの再使用や仲間・敵の予定に合わせる。"
+      },
+      "boss-01-s1": {
+        "name": "石拳",
+        "description": "最低HPの仲間へ物理攻撃。"
+      },
+      "boss-01-s2": {
+        "name": "門砕き",
+        "description": "80 TUの詠唱後、パーティ全体へ物理攻撃。"
+      },
+      "boss-01-s3": {
+        "name": "歩哨の隙",
+        "description": "攻撃せずに待機する。次の石拳までに態勢を整えよう。"
+      },
+      "boss-01": {
+        "name": "門衛ゴーレム",
+        "description": "封印の広間を守る石の門衛。石拳→門砕き→歩哨の隙を繰り返す。雷が弱点、火に耐性。"
+      },
+      "guardian-01-01-s1": {
+        "name": "斬撃",
+        "description": "重斬は80 TUの詠唱。発動前のゲージ破壊か、物理への備えが有効。"
+      },
+      "guardian-01-01-s2": {
+        "name": "重斬",
+        "description": "重斬は80 TUの詠唱。発動前のゲージ破壊か、物理への備えが有効。"
+      },
+      "guardian-01-01": {
+        "name": "石造の試練の剣の守り手",
+        "description": "重斬は80 TUの詠唱。発動前のゲージ破壊か、物理への備えが有効。"
+      },
+      "guardian-01-02-s1": {
+        "name": "魔弾",
+        "description": "魔力奔流は90 TU後に全員へ届く。属性と次の手番を確かめよ。"
+      },
+      "guardian-01-02-s2": {
+        "name": "魔力奔流",
+        "description": "魔力奔流は90 TU後に全員へ届く。属性と次の手番を確かめよ。"
+      },
+      "guardian-01-02": {
+        "name": "石造の試練の杖の守り手",
+        "description": "魔力奔流は90 TU後に全員へ届く。属性と次の手番を確かめよ。"
+      },
+      "guardian-01-03-s1": {
+        "name": "盾撃",
+        "description": "守りの構えは物理を25%軽減する。魔法で攻めるか、構えを解除せよ。"
+      },
+      "guardian-01-03-s2": {
+        "name": "守りの構え",
+        "description": "守りの構えは物理を25%軽減する。魔法で攻めるか、構えを解除せよ。"
+      },
+      "guardian-01-03": {
+        "name": "石造の試練の盾の守り手",
+        "description": "守りの構えは物理を25%軽減する。魔法で攻めるか、構えを解除せよ。"
+      },
+      "guardian-01-04-s1": {
+        "name": "呪印",
+        "description": "呪印は毒を残す。毒は20 TUごとにHPを6削る。回復か解除で備えよ。"
+      },
+      "guardian-01-04-s2": {
+        "name": "結界",
+        "description": "呪印は毒を残す。毒は20 TUごとにHPを6削る。回復か解除で備えよ。"
+      },
+      "guardian-01-04": {
+        "name": "石造の試練の護符の守り手",
+        "description": "呪印は毒を残す。毒は20 TUごとにHPを6削る。回復か解除で備えよ。"
+      },
+      "guardian-01-05-s1": {
+        "name": "速撃",
+        "description": "速撃は手番を15 TU後退させ、足止めは次の待機を長くする。"
+      },
+      "guardian-01-05-s2": {
+        "name": "足止め",
+        "description": "速撃は手番を15 TU後退させ、足止めは次の待機を長くする。"
+      },
+      "guardian-01-05": {
+        "name": "石造の試練の靴の守り手",
+        "description": "速撃は手番を15 TU後退させ、足止めは次の待機を長くする。"
+      },
+      "floor-01-entry": {
+        "name": "石門",
+        "description": "灯火をたどり、祠と封印の広間を探索する。"
+      },
+      "floor-01-hall-1": {
+        "name": "灯火回廊・一",
+        "description": "灯火をたどり、祠と封印の広間を探索する。"
+      },
+      "floor-01-hall-2": {
+        "name": "灯火回廊・二",
+        "description": "灯火をたどり、祠と封印の広間を探索する。"
+      },
+      "floor-01-hall-3": {
+        "name": "灯火回廊・三",
+        "description": "門砕きの予告を見よ。詠唱は80 TU。発動前に止めるか、次の手番までに備えよ。"
+      },
+      "floor-01-boss": {
+        "name": "封印の広間",
+        "description": "灯火をたどり、祠と封印の広間を探索する。"
+      },
+      "floor-01-alcove-1": {
+        "name": "石牙の短剣の祠",
+        "description": "重斬は80 TUの詠唱。発動前のゲージ破壊か、物理への備えが有効。"
+      },
+      "floor-01-alcove-2": {
+        "name": "灯火の杖の祠",
+        "description": "魔力奔流は90 TU後に全員へ届く。属性と次の手番を確かめよ。"
+      },
+      "floor-01-alcove-3": {
+        "name": "石壁の盾の祠",
+        "description": "守りの構えは物理を25%軽減する。魔法で攻めるか、構えを解除せよ。"
+      },
+      "floor-01-alcove-4": {
+        "name": "祈りの石の祠",
+        "description": "呪印は毒を残す。毒は20 TUごとにHPを6削る。回復か解除で備えよ。"
+      },
+      "floor-01-alcove-5": {
+        "name": "風見の羽の祠",
+        "description": "速撃は手番を15 TU後退させ、足止めは次の待機を長くする。"
+      }
+    },
+    "floors": {
+      "floor-01": {
+        "theme": "石造の試練",
+        "entryText": "石壁と灯火に包まれた道が、封印の広間へ続いている。脇の祠には遺物の守護者が待つ。",
+        "hints": [
+          "門衛ゴーレムは雷に弱く、火には耐える。ゲージを砕けば、次の一手を飛ばせる。",
+          "門砕きの予告を見よ。詠唱は80 TU。発動前に止めるか、次の手番までに備えよ。",
+          "行動は三手の繰り返し。急がず、次の予告を確かめよ。"
+        ]
+      }
+    },
+    "ending": [],
+    "elements": {
+      "none": "無",
+      "fire": "火",
+      "ice": "氷",
+      "lightning": "雷",
+      "light": "光",
+      "dark": "闇"
+    },
+    "statuses": {
+      "atk-up": "ATK強化",
+      "atk-down": "ATK弱体",
+      "mag-up": "MAG強化",
+      "mag-down": "MAG弱体",
+      "spd-up": "SPD強化",
+      "spd-down": "SPD弱体",
+      "physical-guard": "物理軽減",
+      "magic-guard": "魔法軽減",
+      "taunt": "挑発",
+      "cover": "かばう",
+      "time-stop": "時間停止",
+      "reflect": "反射",
+      "counter": "カウンター",
+      "follow": "追撃",
+      "poison": "毒",
+      "self-revive": "自己蘇生"
+    },
+    "targets": {
+      "enemy-single": "敵単体",
+      "enemy-all": "敵全体",
+      "ally-single": "味方単体",
+      "ally-other": "自身以外の味方",
+      "ally-all": "味方全体",
+      "self": "自身",
+      "dead-ally-other": "戦闘不能の他の味方",
+      "waiting-ally-other": "待機中の他の味方"
+    }
+  }
+}

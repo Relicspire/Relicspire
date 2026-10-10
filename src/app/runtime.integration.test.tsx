@@ -7,7 +7,8 @@ import {
 } from '@testing-library/react';
 import { createStore, get, set } from 'idb-keyval';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { releaseFixture } from '../game/data/release.fixtures.test-support';
+import input from '../content/release.json';
+import { parseGameRelease } from '../game/data/release';
 import { selectNode } from '../game/progression';
 import {
   DELIVERY_KEY,
@@ -52,7 +53,7 @@ afterEach(() => {
 async function setup() {
   const store = createStore(`runtime-${crypto.randomUUID()}`, 'state');
   const locks = lockManager();
-  const release = releaseFixture();
+  const release = parseGameRelease(input);
   await set(DELIVERY_KEY, { buildId: 'integration' }, store);
   const boot = async () => {
     const runtime = await createRuntime(release, 'integration', {

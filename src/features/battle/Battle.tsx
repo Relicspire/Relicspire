@@ -108,6 +108,31 @@ export function Battle({
         >
           探索を続ける
         </button>
+        <button
+          disabled={disabled || transitioning}
+          onClick={() => void run(game.returnToGuild)}
+        >
+          拠点へ戻る
+        </button>
+        {receipt.reward.unlockFloorId && (
+          <button
+            disabled={
+              disabled ||
+              transitioning ||
+              !release.scope.playableFloorIds.includes(
+                receipt.reward.unlockFloorId,
+              )
+            }
+            onClick={() => void run(game.nextFloor)}
+          >
+            {release.scope.playableFloorIds.includes(
+              receipt.reward.unlockFloorId,
+            )
+              ? '次階層へ'
+              : '次の階層はこの版では未収録です'}
+          </button>
+        )}
+        {error && <p role="alert">{error}</p>}
       </section>
     );
   if (!session) return null;

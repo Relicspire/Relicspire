@@ -125,7 +125,7 @@ describe('戦闘操作と保存の画面接続', () => {
     ]);
     click('探索を続ける');
     expect(screen.getByLabelText('迷宮探索')).toHaveTextContent(
-      '現在地：守護者の間 1',
+      '現在地：名称 floor-01-alcove-1',
     );
   });
   it('勝利保存失敗は未確定を維持し、再試行で報酬を一度だけ確定する', async () => {

@@ -270,6 +270,7 @@ export function createGameState(
       return;
     }
     await save({ ...committed, progression: candidate.progression }, () => {
+      battle.setState({ receipt: null });
       const location = candidate.progression.location;
       exploration.setState({
         encounter: null,

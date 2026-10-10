@@ -36,7 +36,7 @@ describe('探索画面と保存', () => {
     expect(screen.getByRole('alertdialog')).toHaveTextContent('入口文');
     expect(screen.getByRole('alert')).toHaveTextContent('Canvas・WebGL');
     click('探索を続ける');
-    click('分岐 1');
+    click('名称 floor-01-hall-1');
     await waitFor(() =>
       expect(game.snapshot()?.progression.location).toHaveProperty(
         'nodeId',
@@ -55,7 +55,7 @@ describe('探索画面と保存', () => {
     show(game);
     click('探索を続ける');
     vi.spyOn(repository, 'write').mockRejectedValueOnce(new Error('容量不足'));
-    click('分岐 1');
+    click('名称 floor-01-hall-1');
     await screen.findByRole('button', { name: '保存を再試行' });
     expect(game.snapshot()?.progression.location).toHaveProperty(
       'nodeId',
@@ -75,7 +75,7 @@ describe('探索画面と保存', () => {
     await game.move('floor-01-hall-1');
     show(game);
     const before = await repository.read();
-    click('守護者の間 1 · 名称 guardian-01-01');
+    click('名称 floor-01-alcove-1 · 名称 guardian-01-01');
     expect(screen.getByRole('alertdialog')).toHaveTextContent('弱点');
     expect(await repository.read()).toEqual(before);
     click('回避する');
@@ -84,7 +84,7 @@ describe('探索画面と保存', () => {
       'nodeId',
       'floor-01-hall-1',
     );
-    click('守護者の間 1 · 名称 guardian-01-01');
+    click('名称 floor-01-alcove-1 · 名称 guardian-01-01');
     vi.spyOn(repository, 'write').mockRejectedValueOnce(new Error('容量不足'));
     click('戦う');
     await screen.findByRole('button', { name: '保存を再試行' });
@@ -111,8 +111,10 @@ describe('探索画面と保存', () => {
     await game.update(data);
     await game.move('floor-01-hall-1');
     show(game);
-    expect(screen.queryByRole('button', { name: /守護者の間 1 ·/ })).toBeNull();
-    click('守護者の間 1');
+    expect(
+      screen.queryByRole('button', { name: /名称 guardian-01-01/ }),
+    ).toBeNull();
+    click('名称 floor-01-alcove-1 · 討伐済み');
     await waitFor(() =>
       expect(game.snapshot()?.progression.location).toHaveProperty(
         'nodeId',
