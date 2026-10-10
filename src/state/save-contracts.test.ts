@@ -1,5 +1,7 @@
 import { createStore, set } from 'idb-keyval';
 import { describe, expect, it, vi } from 'vitest';
+import input from '../content/release.json';
+import { parseGameRelease } from '../game/data/release';
 import { releaseFixture } from '../game/data/release.fixtures.test-support';
 import { recallPreset } from '../game/party';
 import { deriveProgression, selectNode } from '../game/progression';
@@ -13,9 +15,9 @@ import {
 import { createGameState } from './game';
 import { initialSave, type SaveData } from './save-model';
 
-/** 合成リリースと実IndexedDB APIで保存境界を検証する。戦闘の勝敗計算自体はエンジンテストが担当する。 */
+/** 正式第1階層（最終階層のみ合成）と実IndexedDB APIで保存境界を検証する。戦闘の勝敗計算自体はエンジンテストが担当する。 */
 async function source(final = false) {
-  const release = releaseFixture(final ? 10 : 1);
+  const release = final ? releaseFixture(10) : parseGameRelease(input);
   const store = createStore(`contracts-${crypto.randomUUID()}`, 'state');
   await set(DELIVERY_KEY, { buildId: 'test' }, store);
   const repository = new SaveRepository('test', () => true, store);
